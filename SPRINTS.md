@@ -25,11 +25,20 @@ Roadmap ejecutable derivado de PRD.md + SCHEMA.md (D1–D4 cerrados). Cada sprin
 - `ProfileSchema` (SCHEMA §3) + página `/profile`.
 - `lib/nutrition/targets.ts`: portar `bmr`/`targets` (SCHEMA §6) + tests unitarios.
 
-## Sprint 2 — Pipeline lectura+descomposición (Claude visión)
+## Sprint 2 — Pipeline lectura+descomposición (Claude visión) ✅ DONE
 
-- `lib/llm/read-menu.ts`: prompt + llamada Claude visión, extracción JSON (primera `{` → última `}`), validación `LlmResponseSchema` (SCHEMA §4).
+- `lib/llm/read-menu.ts`: prompt + llamada Claude visión (`claude-sonnet-5`, streaming), extracción JSON (primera `{` → última `}`), validación `LlmResponseSchema` (SCHEMA §4).
 - Soporte 1–4 imágenes y/o PDF.
-- Iterar prompt contra cartas reales variadas (idioma, densidad) hasta ≥90% platos leídos bien (PRD §10).
+
+**Validado contra 3 cartas reales:**
+- Carta "Ezequiel" (screenshot, 154KB): 18/18 platos, JSON válido, `nutrition_query` bien descompuesto (ingredientes puros, sin doble conteo).
+- Web hamburguesería (screenshot viewport, 1.6MB): solo 3 platos — captura parcial (viewport, no página completa), no bug del pipeline. Ver R3.
+- Carta "Ezequiel" completa (PDF, 12.8MB, tríptico 2 caras): **89/89 platos**, JSON válido; el LLM excluyó correctamente los "menús especiales" combinados (evita doble conteo) y separó el listado de alérgenos como referencia, no como plato.
+
+**Hallazgos técnicos (aplicados al código):**
+- Claude Vision rechaza imágenes >10MB (`400 invalid_request_error`) — screenshot de página completa de 24.8MB falló. **R6 nuevo en PRD.**
+- Anthropic SDK exige `messages.stream()` en vez de `.create()` para respuestas largas (menús con 80+ platos superan el timeout heurístico de streaming no-activado) — implementado.
+- `max_tokens: 32000` necesario para cartas grandes (16384 truncaba el PDF de 89 platos).
 
 ## Sprint 3 — API Ninjas + Scoring + `/api/analyze`
 

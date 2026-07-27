@@ -117,9 +117,10 @@ Next.js 16 (App Router, `create-next-app@latest` instaló 16 — actualizado des
 |---|---|---|---|
 | R1 | **Parseabilidad API Ninjas** de las `nutrition_query` | **Validado** (jul 2026, 3/3 casos) | Ver hallazgo abajo: doble conteo si la query mezcla nombre genérico de plato + sus ingredientes |
 | R2 | Estimación de porción (incertidumbre residual) | Conocido | Comunicar supuesto; v2: ajuste manual |
-| R3 | Cartas densas / letra pequeña a 1568px | Conocido | v2: troceado a alta resolución |
+| R3 | Cartas densas / letra pequeña a 1568px; capturas parciales (viewport, no página completa) leen solo lo visible — validado Sprint 2 | Conocido | v2: troceado a alta resolución; UI debe indicar "captura la carta completa" |
 | R4 | Límites/coste free tier API Ninjas | Abierto | Verificar cuota antes del MVP |
 | R5 | Scraping de URL frágil | Mitigado | Fuera del MVP (v2) |
+| R6 | **Límite duro de 10MB/imagen en Claude Vision** (validado Sprint 2: 24.8MB rebota con 400) | Conocido | Comprimir/redimensionar client-side antes de subir (Sprint 4); PDF tiene límite más alto (32MB), probado OK con 12.8MB |
 | D1 | **Auth: perfil guardado (Supabase) vs sesión anónima** | **Cerrado** | Auth + perfil persistente; "probar sin cuenta" ejecuta en memoria |
 | D2 | ¿Calcular TDEE (antropometría) o pedir target kcal directo? | **Cerrado** | Calcular TDEE con override manual |
 | D3 | Nutritionix vs Edamam vs API Ninjas | **Cerrado** (revisado) | Nutritionix cerró self-serve no-comercial (jul 2026) → **API Ninjas** (ex-CalorieNinjas): `/v1/nutrition`, texto libre multi-ingrediente, self-serve sin tarjeta |
