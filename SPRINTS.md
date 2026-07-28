@@ -40,12 +40,13 @@ Roadmap ejecutable derivado de PRD.md + SCHEMA.md (D1–D4 cerrados). Cada sprin
 - Anthropic SDK exige `messages.stream()` en vez de `.create()` para respuestas largas (menús con 80+ platos superan el timeout heurístico de streaming no-activado) — implementado.
 - `max_tokens: 32000` necesario para cartas grandes (16384 truncaba el PDF de 89 platos).
 
-## Sprint 3 — API Ninjas + Scoring + `/api/analyze`
+## Sprint 3 — API Ninjas + Scoring + `/api/analyze` ✅ DONE
 
-- `lib/nutrition/api-ninjas.ts` cliente real (aprendizajes Sprint 0), `GroundedMacrosSchema` (SCHEMA §5).
-- `lib/nutrition/scoring.ts`: portar `scoreDish` (SCHEMA §7).
-- `hardRed` = alergia + conflicto dieta (guardarraíl PRD §9).
-- `/api/analyze/route.ts`: orquestación completa (SCHEMA §8), fallback `llm_draft_verdict` si API Ninjas falla por plato, persistencia condicional si autenticado.
+- `lib/nutrition/api-ninjas.ts`: `groundMacros()` (cliente real `GET /v1/nutrition`, mapeo a `GroundedMacrosSchema`, heurística de confianza en 3 niveles high/medium/low según ratio ítems-devueltos/ingredientes-esperados) + `groundMacrosBatch()` (concurrencia limitada a 5, fallo por-plato → `null`, no aborta el batch — protege cuota free tier, R4).
+- `lib/nutrition/scoring.ts`: `scoreDish` portado literal de SCHEMA §7 (constantes 0.40/0.45, umbrales 70/45 sin tocar). `hasHardConflict`: rojo forzado si el LLM declaró conflicto (alergia o dieta) **o** si `diet=keto` y carbos fundados >20g (chequeo numérico del lado del código, independiente del LLM). `normalizeVerdict` tolera ES (verde/ambar/rojo).
+- `/api/analyze/route.ts`: multipart (`files[]` + `payload` JSON) → `readMenu` (Sprint 2) → `groundMacrosBatch` → `hasHardConflict` → `scoreDish` → orden por veredicto luego `fitScore` desc → persistencia condicional (solo si `supabase.auth.getUser()` devuelve user; anónimo = `analysisId: null`, sin escribir filas, D1) → `AnalyzeResponseSchema`.
+- Matiz de fidelidad al PRD §7: si API Ninjas falla para un plato, el **veredicto de texto** cae al `llm_draft_verdict` normalizado (tal como pide el PRD), pero el `fitScore` numérico lo sigue calculando el motor con las macros aproximadas del LLM como entrada — así el orden de la lista sigue siendo determinista incluso en fallback.
+- **Validado con `scripts/validate-scoring.ts` contra macros reales fundadas**: pechuga+arroz+brócoli puntúa alto en los 3 objetivos (más en cut, como se espera de su perfil proteico); paella (mismo caso de doble conteo de Sprint 0, usado aquí a propósito) puntúa más alto en bulk que en cut/maintain, penalizada por grasa/kcal en cut — el motor reacciona al objetivo de forma sensata. Guardarraíles confirmados: alergia declarada → red/fitScore=0 siempre; keto con carbos forzados >20g → hardRed=true.
 
 ## Sprint 4 — UI resultados + historial
 
