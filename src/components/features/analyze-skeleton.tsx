@@ -1,6 +1,23 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+
 export function AnalyzeSkeleton() {
+  const ref = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    ref.current?.focus();
+  }, []);
+
   return (
-    <main className="mx-auto w-full max-w-2xl space-y-4 px-4 py-10">
+    <main
+      ref={ref}
+      tabIndex={-1}
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      className="mx-auto w-full max-w-2xl space-y-4 px-4 py-10 outline-none"
+    >
       <p className="text-sm text-foreground/60">Analizando carta… puede tardar un minuto.</p>
       <div className="space-y-3">
         {[0, 1, 2, 3].map((i) => (

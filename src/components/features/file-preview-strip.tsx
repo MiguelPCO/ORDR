@@ -44,7 +44,7 @@ export function FilePreviewStrip({
       {rotateError && <p className="text-xs text-red-700 dark:text-red-400">{rotateError}</p>}
       <div className="flex gap-2 overflow-x-auto py-2">
       {files.map((file, i) => (
-        <div key={i} className="shrink-0 text-center">
+        <div key={`${file.name}-${file.size}-${file.lastModified}`} className="shrink-0 text-center">
           {file.type === "application/pdf" ? (
             <div className="flex h-20 w-20 items-center justify-center rounded-md border border-foreground/20 text-xs font-medium text-foreground/60">
               PDF
@@ -62,7 +62,7 @@ export function FilePreviewStrip({
               <button
                 type="button"
                 onClick={() => handleRotate(i)}
-                aria-label="Rotar imagen 90 grados"
+                aria-label={`Rotar imagen ${i + 1}`}
                 className="rounded bg-foreground/10 px-1.5 py-0.5 text-xs"
               >
                 ↻
@@ -71,7 +71,7 @@ export function FilePreviewStrip({
             <button
               type="button"
               onClick={() => handleRemove(i)}
-              aria-label="Quitar archivo"
+              aria-label={`Quitar archivo ${i + 1}`}
               className="rounded bg-foreground/10 px-1.5 py-0.5 text-xs"
             >
               ✕

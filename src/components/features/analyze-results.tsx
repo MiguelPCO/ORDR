@@ -23,13 +23,15 @@ export function AnalyzeResults({
   // Transición de veredicto (SPRINTS Sprint 4): revelado escalonado de las tarjetas al llegar el resultado.
   useGSAP(
     () => {
-      gsap.from(".dish-card", {
-        opacity: 0,
-        y: 16,
-        duration: 0.4,
-        stagger: 0.06,
-        ease: "power2.out",
-      });
+      if (filteredDishes.length > 0) {
+        gsap.from(".dish-card", {
+          opacity: 0,
+          y: 16,
+          duration: 0.4,
+          stagger: 0.06,
+          ease: "power2.out",
+        });
+      }
     },
     { scope: containerRef, dependencies: [result, filter] }
   );
