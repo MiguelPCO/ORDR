@@ -21,10 +21,13 @@ export const ProfileSchema = z.object({
   activityLevel: Activity,
   diet: Diet,
   allergies: z.array(z.string()).default([]),
+  dislikes: z.array(z.string()).default([]),
   goal: Goal,
   mealsPerDay: z.number().int().min(1).max(6).default(3),
   proteinGPerKg: z.number().min(1).max(3.5).default(2.0),
   manualTdee: z.number().int().positive().nullable().default(null),
+  fatLimitG: z.number().positive().nullable().default(null),
+  carbLimitG: z.number().positive().nullable().default(null),
 });
 export type Profile = z.infer<typeof ProfileSchema>;
 
@@ -78,6 +81,11 @@ export const AnalyzeRequestSchema = z.object({
     mealProtein: z.number(),
     diet: Diet,
     allergies: z.array(z.string()),
+    allergiesExtra: z.array(z.string()).default([]),
+    dislikes: z.array(z.string()).default([]),
+    dislikesExtra: z.array(z.string()).default([]),
+    fatLimitG: z.number().positive().nullable().default(null),
+    carbLimitG: z.number().positive().nullable().default(null),
   }),
 });
 
