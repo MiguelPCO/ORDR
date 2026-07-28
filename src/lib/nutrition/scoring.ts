@@ -57,9 +57,13 @@ export function normalizeVerdict(v: string): Verdict {
 export function hasHardConflict(
   conflicts: string[],
   grounded: Macros | null,
-  diet: Diet
+  diet: Diet,
+  fatLimitG: number | null = null,
+  carbLimitG: number | null = null
 ): boolean {
   if (conflicts.length > 0) return true;
-  if (grounded && diet === "keto" && grounded.carbs_g > KETO_CARB_LIMIT_G) return true;
+  const effectiveCarbLimit = carbLimitG ?? (diet === "keto" ? KETO_CARB_LIMIT_G : null);
+  if (grounded && effectiveCarbLimit !== null && grounded.carbs_g > effectiveCarbLimit) return true;
+  if (grounded && fatLimitG !== null && grounded.fat_g > fatLimitG) return true;
   return false;
 }
