@@ -1,9 +1,22 @@
-export default function AnalyzePage() {
-  return (
-    <main className="flex flex-1 flex-col items-center justify-center px-4 py-16 text-center">
-      <p className="text-foreground/60">
-        Subida de carta + pipeline: Sprint 2/3 (SPRINTS.md). Todavía no implementado.
-      </p>
-    </main>
-  );
+import { createClient } from "@/lib/supabase/server";
+import { PROFILE_ROW_SELECT, rowToProfile } from "@/lib/supabase/profile-row";
+import { AnalyzeClient } from "@/components/features/analyze-client";
+
+export default async function AnalyzePage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let initialProfile = null;
+  if (user) {
+    const { data: row } = await supabase
+      .from("profiles")
+      .select(PROFILE_ROW_SELECT)
+      .eq("id", user.id)
+      .maybeSingle();
+    initialProfile = row ? rowToProfile(row) : null;
+  }
+
+  return <AnalyzeClient initialProfile={initialProfile} isAuthenticated={!!user} />;
 }

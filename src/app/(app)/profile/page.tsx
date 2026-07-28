@@ -1,37 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileForm } from "@/components/features/profile-form";
-import type { Profile } from "@/schemas";
-
-function rowToProfile(row: {
-  display_name: string;
-  sex: string;
-  birth_date: string;
-  height_cm: number;
-  weight_kg: number;
-  activity_level: string;
-  diet: string;
-  allergies: string[];
-  goal: string;
-  meals_per_day: number;
-  protein_g_per_kg: number;
-  manual_tdee: number | null;
-}): Profile {
-  return {
-    displayName: row.display_name,
-    sex: row.sex as Profile["sex"],
-    birthDate: new Date(row.birth_date),
-    heightCm: row.height_cm,
-    weightKg: row.weight_kg,
-    activityLevel: row.activity_level as Profile["activityLevel"],
-    diet: row.diet as Profile["diet"],
-    allergies: row.allergies,
-    goal: row.goal as Profile["goal"],
-    mealsPerDay: row.meals_per_day,
-    proteinGPerKg: row.protein_g_per_kg,
-    manualTdee: row.manual_tdee,
-  };
-}
+import { PROFILE_ROW_SELECT, rowToProfile } from "@/lib/supabase/profile-row";
 
 export default async function ProfilePage({
   searchParams,
@@ -48,9 +18,7 @@ export default async function ProfilePage({
 
   const { data: row } = await supabase
     .from("profiles")
-    .select(
-      "display_name, sex, birth_date, height_cm, weight_kg, activity_level, diet, allergies, goal, meals_per_day, protein_g_per_kg, manual_tdee"
-    )
+    .select(PROFILE_ROW_SELECT)
     .eq("id", user.id)
     .maybeSingle();
 

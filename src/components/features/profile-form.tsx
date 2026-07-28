@@ -54,7 +54,17 @@ function toDefault(profile: Profile | null): FormValues {
   };
 }
 
-export function ProfileForm({ profile }: { profile: Profile | null }) {
+export function ProfileForm({
+  profile,
+  onSave,
+  submitLabel,
+}: {
+  profile: Profile | null;
+  /** Modo "sesión": si se pasa, no se persiste en Supabase — se entrega el perfil ya parseado
+   * (ej. para el flujo anónimo de /analyze, guardado en memoria vía Zustand). */
+  onSave?: (profile: Profile) => void;
+  submitLabel?: string;
+}) {
   const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
@@ -66,6 +76,7 @@ export function ProfileForm({ profile }: { profile: Profile | null }) {
   function parse(values: FormValues) {
     return ProfileSchema.safeParse({
       ...values,
+      displayName: onSave ? values.displayName || "Invitado" : values.displayName,
       allergies: values.allergies.split(",").map((a) => a.trim()).filter(Boolean),
       manualTdee: values.manualTdee === "" ? null : Number(values.manualTdee),
     });
@@ -85,6 +96,11 @@ export function ProfileForm({ profile }: { profile: Profile | null }) {
     }
     setFormError(null);
 
+    if (onSave) {
+      onSave(parsed.data);
+      return;
+    }
+
     const fd = new FormData();
     fd.set("displayName", values.displayName);
     fd.set("sex", values.sex);
@@ -103,16 +119,18 @@ export function ProfileForm({ profile }: { profile: Profile | null }) {
 
   return (
     <form onSubmit={onSubmit} className="mx-auto w-full max-w-lg space-y-6 px-4 py-10">
-      <div className="space-y-1">
-        <label htmlFor="displayName" className="text-sm font-medium">
-          Nombre
-        </label>
-        <input
-          id="displayName"
-          className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
-          {...register("displayName")}
-        />
-      </div>
+      {!onSave && (
+        <div className="space-y-1">
+          <label htmlFor="displayName" className="text-sm font-medium">
+            Nombre
+          </label>
+          <input
+            id="displayName"
+            className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
+            {...register("displayName")}
+          />
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
@@ -285,7 +303,7 @@ export function ProfileForm({ profile }: { profile: Profile | null }) {
         disabled={isSubmitting}
         className="w-full rounded-md bg-foreground px-3 py-2 text-sm font-medium text-background disabled:opacity-50"
       >
-        {isSubmitting ? "Guardando…" : "Guardar perfil"}
+        {isSubmitting ? "Guardando…" : (submitLabel ?? "Guardar perfil")}
       </button>
     </form>
   );

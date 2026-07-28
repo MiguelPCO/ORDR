@@ -81,22 +81,40 @@ export const AnalyzeRequestSchema = z.object({
   }),
 });
 
+export const AnalyzedDishSchema = z.object({
+  name: z.string(),
+  reason: z.string(),
+  nutritionQuery: z.string(),
+  assumptions: z.string(),
+  conflicts: z.array(z.string()),
+  approxMacros: MacrosSchema,
+  groundedMacros: GroundedMacrosSchema.nullable(),
+  verdict: Verdict,
+  fitScore: z.number(),
+});
+export type AnalyzedDish = z.infer<typeof AnalyzedDishSchema>;
+
 export const AnalyzeResponseSchema = z.object({
   analysisId: z.string().nullable(),
   menuReadOk: z.boolean(),
   notes: z.string().optional(),
-  dishes: z.array(
-    z.object({
-      name: z.string(),
-      reason: z.string(),
-      nutritionQuery: z.string(),
-      assumptions: z.string(),
-      conflicts: z.array(z.string()),
-      approxMacros: MacrosSchema,
-      groundedMacros: GroundedMacrosSchema.nullable(),
-      verdict: Verdict,
-      fitScore: z.number(),
-    })
-  ),
+  dishes: z.array(AnalyzedDishSchema),
 });
 export type AnalyzeResponse = z.infer<typeof AnalyzeResponseSchema>;
+
+// Historial (D4) — SCHEMA.md §8, GET /api/analyses · GET /api/analyses/:id
+export const AnalysisSummarySchema = z.object({
+  id: z.string(),
+  createdAt: z.string(),
+  sourceType: z.enum(["image", "pdf", "url"]),
+  status: z.enum(["processing", "done", "error"]),
+  notes: z.string().nullable(),
+  goalSnapshot: z.record(z.string(), z.unknown()),
+  dishCount: z.number(),
+});
+export type AnalysisSummary = z.infer<typeof AnalysisSummarySchema>;
+
+export const AnalysisDetailSchema = AnalysisSummarySchema.extend({
+  dishes: z.array(AnalyzedDishSchema),
+});
+export type AnalysisDetail = z.infer<typeof AnalysisDetailSchema>;

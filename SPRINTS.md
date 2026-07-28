@@ -48,11 +48,16 @@ Roadmap ejecutable derivado de PRD.md + SCHEMA.md (D1–D4 cerrados). Cada sprin
 - Matiz de fidelidad al PRD §7: si API Ninjas falla para un plato, el **veredicto de texto** cae al `llm_draft_verdict` normalizado (tal como pide el PRD), pero el `fitScore` numérico lo sigue calculando el motor con las macros aproximadas del LLM como entrada — así el orden de la lista sigue siendo determinista incluso en fallback.
 - **Validado con `scripts/validate-scoring.ts` contra macros reales fundadas**: pechuga+arroz+brócoli puntúa alto en los 3 objetivos (más en cut, como se espera de su perfil proteico); paella (mismo caso de doble conteo de Sprint 0, usado aquí a propósito) puntúa más alto en bulk que en cut/maintain, penalizada por grasa/kcal en cut — el motor reacciona al objetivo de forma sensata. Guardarraíles confirmados: alergia declarada → red/fitScore=0 siempre; keto con carbos forzados >20g → hardRed=true.
 
-## Sprint 4 — UI resultados + historial
+## Sprint 4 — UI resultados + historial ✅ DONE
 
-- `/analyze`: upload multi-imagen/PDF, loading states, semáforo + `fit_score` + detalle bajo demanda.
-- `/history` + `GET /api/analyses`, `/api/analyses/:id`.
-- Motion (GSAP) en transición de veredicto.
+- Flujo anónimo (D1): `stores/session-store.ts` guarda un `anonymousProfileDraft` en sessionStorage (birthDate como string, re-validado con `ProfileSchema` al leer — evita el problema de que `JSON.parse` rompe `Date`). `ProfileForm` ahora acepta `onSave`/`submitLabel` opcionales: en modo "sesión" oculta el campo Nombre (default "Invitado") y no llama al server action `saveProfile`, en vez de eso entrega el `Profile` ya parseado al caller. Reutilizado sin duplicar ~250 líneas de formulario.
+- `lib/supabase/profile-row.ts` y `lib/supabase/dish-row.ts`: mapeo fila→dominio extraído (antes duplicado en profile/page.tsx; ahora también usado por analyze/page.tsx, `/api/analyses/[id]`, `/history/[id]`).
+- `/analyze`: server component resuelve perfil si hay sesión Supabase; `AnalyzeClient` resuelve anónimo vs autenticado, selector de "objetivo de esta sesión" (PRD §6: perfil una vez, objetivo por sesión), upload 1-4 archivos con validación de tipo/cantidad, `POST /api/analyze` con estado de carga, resultados vía `AnalyzeResults`.
+- `DishResultCard`: semáforo (verde/ámbar/rojo), `fit_score`, razón, conflictos, detalle bajo demanda (`<details>`) con macros estimadas (LLM) vs fundadas (API Ninjas + confianza) — reutilizado también en `/history/[id]`.
+- `AnalyzeResults`: `useGSAP` (instalado `@gsap/react`) con stagger de entrada en las tarjetas de resultado — transición de veredicto.
+- `GET /api/analyses` (lista, con conteo de platos) y `GET /api/analyses/:id` (detalle) — nuevos schemas `AnalysisSummarySchema`/`AnalysisDetailSchema`/`AnalyzedDishSchema` en schemas/index.ts. `/history` y `/history/[id]` consultan Supabase directo desde el server component (mismo patrón que `/profile`), los route handlers quedan como contrato de API independiente.
+- **Validado en navegador (Playwright) contra el pipeline real**: flujo anónimo completo — mini-perfil → objetivo de sesión → subida de la carta "Ezequiel" (154KB, mismo caso de Sprint 2) → `POST /api/analyze` real (Claude vision + 18 llamadas a CalorieNinjas) resuelto en 59s → 18 platos renderizados, ordenados correctamente (verde: 80/80/75 → ámbar: 67/64/54/53/53/50 → rojo: 45/32/32/31/30/28/26/25/12), detalle expandible mostrando estimado LLM vs fundado API Ninjas con confianza. 0 errores de consola.
+- Migraciones SQL de Sprint 1 siguen sin aplicarse en el Supabase real del usuario (confirmado con una llamada REST directa: `PGRST205 — could not find the table 'public.analyses'`) → el flujo autenticado con historial persistido queda sin poder probarse end-to-end hasta que el usuario las aplique; el flujo anónimo (sin persistencia) sí quedó validado por completo.
 
 ## Sprint 5 — Recalibración + telemetría
 
