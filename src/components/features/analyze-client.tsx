@@ -77,13 +77,21 @@ export function AnalyzeClient({
 
   function addFiles(incoming: File[]) {
     if (!validateTypes(incoming)) return;
+    // Descarta duplicados por identidad (mismo archivo elegido dos veces): evita
+    // enviar la misma imagen dos veces al análisis y evita colisiones de key en
+    // FilePreviewStrip (que usa name+size+lastModified como key estable).
+    const isDuplicate = (f: File) =>
+      files.some((p) => p.name === f.name && p.size === f.size && p.lastModified === f.lastModified);
+    const fresh = incoming.filter((f) => !isDuplicate(f));
     const room = MAX_FILES - files.length;
-    if (incoming.length > room) {
+    if (fresh.length > room) {
       setErrorMsg(`Máximo ${MAX_FILES} archivos — no se añadieron todos.`);
+    } else if (fresh.length < incoming.length) {
+      setErrorMsg("Ese archivo ya estaba añadido — no se duplicó.");
     } else {
       setErrorMsg(null);
     }
-    setFiles((prev) => [...prev, ...incoming].slice(0, MAX_FILES));
+    setFiles((prev) => [...prev, ...fresh].slice(0, MAX_FILES));
   }
 
   function handleCameraCapture(fileList: FileList | null) {
