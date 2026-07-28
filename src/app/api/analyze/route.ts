@@ -59,7 +59,8 @@ export async function POST(request: NextRequest) {
   try {
     llmResult = await readMenu(images, {
       diet: profileSnapshot.diet,
-      allergies: profileSnapshot.allergies,
+      allergies: [...profileSnapshot.allergies, ...profileSnapshot.allergiesExtra],
+      dislikes: [...profileSnapshot.dislikes, ...profileSnapshot.dislikesExtra],
     });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 502 });
@@ -86,7 +87,13 @@ export async function POST(request: NextRequest) {
 
   const scoredDishes = llmResult.dishes.map((dish, i) => {
     const groundedMacros = grounded[i];
-    const hardRed = hasHardConflict(dish.conflicts, groundedMacros, profileSnapshot.diet);
+    const hardRed = hasHardConflict(
+      dish.conflicts,
+      groundedMacros,
+      profileSnapshot.diet,
+      profileSnapshot.fatLimitG,
+      profileSnapshot.carbLimitG
+    );
     const macrosForScoring = groundedMacros ?? dish.approx;
     const { verdict: engineVerdict, fitScore } = scoreDish(macrosForScoring, target, goal, hardRed);
 
