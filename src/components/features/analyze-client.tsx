@@ -66,29 +66,35 @@ export function AnalyzeClient({
 
   const sessionGoal = goal ?? profile.goal;
 
-  function validateAndSet(newFiles: File[]): boolean {
+  function validateTypes(newFiles: File[]): boolean {
     const invalid = newFiles.find((f) => !ACCEPTED_TYPES.has(f.type));
     if (invalid) {
       setErrorMsg(`Tipo no soportado: ${invalid.type || invalid.name}`);
       return false;
     }
-    setErrorMsg(null);
     return true;
+  }
+
+  function addFiles(incoming: File[]) {
+    if (!validateTypes(incoming)) return;
+    const room = MAX_FILES - files.length;
+    if (incoming.length > room) {
+      setErrorMsg(`Máximo ${MAX_FILES} archivos — no se añadieron todos.`);
+    } else {
+      setErrorMsg(null);
+    }
+    setFiles((prev) => [...prev, ...incoming].slice(0, MAX_FILES));
   }
 
   function handleCameraCapture(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return;
-    const captured = Array.from(fileList);
-    if (!validateAndSet(captured)) return;
-    setFiles((prev) => [...prev, ...captured].slice(0, MAX_FILES));
+    addFiles(Array.from(fileList));
     if (cameraInputRef.current) cameraInputRef.current.value = "";
   }
 
   function handleGallerySelect(fileList: FileList | null) {
     if (!fileList) return;
-    const arr = Array.from(fileList).slice(0, MAX_FILES);
-    if (!validateAndSet(arr)) return;
-    setFiles(arr);
+    addFiles(Array.from(fileList));
     if (galleryInputRef.current) galleryInputRef.current.value = "";
   }
 
@@ -151,6 +157,15 @@ export function AnalyzeClient({
 
   return (
     <main className="mx-auto w-full max-w-lg space-y-6 px-4 py-10">
+      {!isAuthenticated && (
+        <div className="flex items-center justify-between rounded-full bg-accent-soft px-3 py-1.5 text-xs font-medium text-accent-dark">
+          <span>Modo invitado — este análisis no se guarda</span>
+          <a href="/signup" className="underline underline-offset-2">
+            Crear cuenta
+          </a>
+        </div>
+      )}
+
       <div className="space-y-1">
         <label htmlFor="goal" className="text-sm font-medium">
           Objetivo de esta sesión
