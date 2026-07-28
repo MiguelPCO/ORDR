@@ -15,10 +15,13 @@ type FormValues = {
   activityLevel: Profile["activityLevel"];
   diet: Profile["diet"];
   allergies: string;
+  dislikes: string;
   goal: Profile["goal"];
   mealsPerDay: number;
   proteinGPerKg: number;
   manualTdee: number | "";
+  fatLimitG: number | "";
+  carbLimitG: number | "";
 };
 
 function toDefault(profile: Profile | null): FormValues {
@@ -32,10 +35,13 @@ function toDefault(profile: Profile | null): FormValues {
       activityLevel: "moderate",
       diet: "none",
       allergies: "",
+      dislikes: "",
       goal: "maintain",
       mealsPerDay: 3,
       proteinGPerKg: 2.0,
       manualTdee: "",
+      fatLimitG: "",
+      carbLimitG: "",
     };
   }
   return {
@@ -47,10 +53,13 @@ function toDefault(profile: Profile | null): FormValues {
     activityLevel: profile.activityLevel,
     diet: profile.diet,
     allergies: profile.allergies.join(", "),
+    dislikes: profile.dislikes.join(", "),
     goal: profile.goal,
     mealsPerDay: profile.mealsPerDay,
     proteinGPerKg: profile.proteinGPerKg,
     manualTdee: profile.manualTdee ?? "",
+    fatLimitG: profile.fatLimitG ?? "",
+    carbLimitG: profile.carbLimitG ?? "",
   };
 }
 
@@ -78,7 +87,10 @@ export function ProfileForm({
       ...values,
       displayName: onSave ? values.displayName || "Invitado" : values.displayName,
       allergies: values.allergies.split(",").map((a) => a.trim()).filter(Boolean),
+      dislikes: values.dislikes.split(",").map((d) => d.trim()).filter(Boolean),
       manualTdee: values.manualTdee === "" ? null : Number(values.manualTdee),
+      fatLimitG: values.fatLimitG === "" ? null : Number(values.fatLimitG),
+      carbLimitG: values.carbLimitG === "" ? null : Number(values.carbLimitG),
     });
   }
 
@@ -110,10 +122,13 @@ export function ProfileForm({
     fd.set("activityLevel", values.activityLevel);
     fd.set("diet", values.diet);
     fd.set("allergies", values.allergies);
+    fd.set("dislikes", values.dislikes);
     fd.set("goal", values.goal);
     fd.set("mealsPerDay", String(values.mealsPerDay));
     fd.set("proteinGPerKg", String(values.proteinGPerKg));
     if (values.manualTdee !== "") fd.set("manualTdee", String(values.manualTdee));
+    if (values.fatLimitG !== "") fd.set("fatLimitG", String(values.fatLimitG));
+    if (values.carbLimitG !== "") fd.set("carbLimitG", String(values.carbLimitG));
     await saveProfile(fd);
   });
 
@@ -244,6 +259,17 @@ export function ProfileForm({
         />
       </div>
 
+      <div className="space-y-1">
+        <label htmlFor="dislikes" className="text-sm font-medium">
+          No me gusta (separado por coma)
+        </label>
+        <input
+          id="dislikes"
+          className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
+          {...register("dislikes")}
+        />
+      </div>
+
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-1">
           <label htmlFor="mealsPerDay" className="text-sm font-medium">
@@ -278,6 +304,33 @@ export function ProfileForm({
             placeholder="opcional"
             className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
             {...register("manualTdee")}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1">
+          <label htmlFor="fatLimitG" className="text-sm font-medium">
+            Límite grasa (g/comida)
+          </label>
+          <input
+            id="fatLimitG"
+            type="number"
+            placeholder="sin límite"
+            className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
+            {...register("fatLimitG")}
+          />
+        </div>
+        <div className="space-y-1">
+          <label htmlFor="carbLimitG" className="text-sm font-medium">
+            Límite carbos (g/comida)
+          </label>
+          <input
+            id="carbLimitG"
+            type="number"
+            placeholder="sin límite"
+            className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
+            {...register("carbLimitG")}
           />
         </div>
       </div>
