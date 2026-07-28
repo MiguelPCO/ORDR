@@ -11,6 +11,7 @@ export type MenuImageInput = {
 export type ReadMenuProfile = {
   diet: Diet;
   allergies: string[];
+  dislikes: string[];
 };
 
 const SYSTEM_PROMPT = `Eres el módulo de lectura de cartas de restaurante de ORDR. Recibes 1-4 fotos y/o un PDF de una carta, en cualquier idioma, y el perfil dietético del usuario.
@@ -23,7 +24,7 @@ Para cada plato de la carta, produce:
    REGLA CRÍTICA: nunca mezcles el nombre genérico del plato con sus ingredientes en la misma query (ej. NO "paella with chicken, shrimp, and rice" — eso causa doble conteo de macros porque la API reconoce el plato Y los ingredientes por separado). Descompón SIEMPRE en ingredientes puros con cantidad, nunca el nombre del plato.
 5. "approx": tu propia estimación aproximada de macros {kcal, protein_g, carbs_g, fat_g} para ese plato completo (fallback si la API de nutrición falla).
 6. "assumptions": qué asumiste sobre la porción o preparación (ej. "asume ración media de 350g, no incluye pan de acompañamiento").
-7. "conflicts": array de strings — cualquier conflicto con la dieta y las alergias del usuario (te las paso en el siguiente mensaje). Si hay un alérgeno presente, decláralo explícitamente aquí.
+7. "conflicts": array de strings — cualquier conflicto con la dieta, las alergias, y los ingredientes que el usuario dice que no le gustan (te las paso en el siguiente mensaje). Si hay un alérgeno presente O un ingrediente de la lista "no me gusta", decláralo explícitamente aquí — mismo trato para ambos casos.
 
 Responde ÚNICAMENTE con un objeto JSON con esta forma (sin markdown, sin texto antes o después):
 {
@@ -37,6 +38,8 @@ Si no puedes leer la carta en absoluto, devuelve "menu_read_ok": false, "dishes"
 function buildUserText(profile: ReadMenuProfile): string {
   return `Perfil del usuario — dieta: "${profile.diet}", alergias: [${profile.allergies
     .map((a) => `"${a}"`)
+    .join(", ")}], no le gusta: [${profile.dislikes
+    .map((d) => `"${d}"`)
     .join(", ")}]. Lee la carta adjunta y descompón cada plato según las instrucciones.`;
 }
 
