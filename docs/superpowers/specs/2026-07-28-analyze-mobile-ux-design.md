@@ -51,7 +51,7 @@ Ambos alimentan el mismo estado `files: File[]` que ya existe en `AnalyzeClient`
 
 ### 3.4 Skeleton loader (nuevo componente `AnalyzeSkeleton`)
 
-- Cuando `status === "loading"`, en vez de solo deshabilitar el botón con texto, se renderiza en el área de resultados una lista de 4 tarjetas fantasma (mismo tamaño/forma que `DishResultCard`, con bloques grises `animate-pulse` de Tailwind en vez de contenido). El botón sigue existiendo arriba pero ya no es la única señal de progreso.
+- Cuando `status === "loading"`, el `return` anticipado de `AnalyzeClient` reemplaza por completo el formulario (incluido el botón "Analizar carta") por `AnalyzeSkeleton`: una lista de 4 tarjetas fantasma (mismo tamaño/forma que `DishResultCard`, con bloques grises `animate-pulse` de Tailwind en vez de contenido). No es un complemento visual junto al botón — es la única UI visible durante la espera.
 
 ### 3.5 Hero card + chips de filtro (dentro de `AnalyzeResults`)
 
@@ -101,4 +101,4 @@ Implementado vía `docs/superpowers/plans/2026-07-28-analyze-mobile-ux.md` (11 t
 - El resultado se persistió correctamente en `/history` (nueva entrada "19 platos · 2 en verde" junto a la de Sprint 4), confirmando que Task 6/7 no rompieron el flujo de persistencia existente.
 - 0 errores ni warnings de consola nuevos en todo el recorrido.
 
-**No verificado en esta pasada** (no crítico, dejado para revisión visual futura si hace falta): flujo anónimo completo de la sección "Cuenta" — por diseño, `/profile` sigue redirigiendo a `/login` para usuarios anónimos (ver la desviación documentada en el plan), así que no aplica un caso anónimo aquí.
+**No verificado en esta pasada** (no crítico, dejado para revisión visual futura si hace falta): flujo anónimo completo de la sección "Cuenta" — por diseño, `/profile` sigue redirigiendo a `/login` para usuarios anónimos (ver la desviación documentada en el plan), así que no aplica un caso anónimo aquí. Tampoco se ejercitó manualmente el estado vacío de los chips de filtro (mensaje "Ningún plato en esta categoría" de la sección 5) ni la ruta de error de rotación de imagen ("No se pudo rotar esta imagen") — el pase de Playwright solo cubrió Verde y Rojo, ambos con resultados no vacíos.
