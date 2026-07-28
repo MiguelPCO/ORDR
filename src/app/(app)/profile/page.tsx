@@ -25,7 +25,7 @@ export default async function ProfilePage({
   return (
     <div>
       {params.saved && (
-        <p className="mx-auto mt-6 max-w-lg rounded-md bg-green-500/10 px-3 py-2 text-center text-sm text-green-700 dark:text-green-400">
+        <p className="mx-auto mt-6 max-w-lg rounded-md bg-brand-soft px-3 py-2 text-center text-sm text-brand-on-soft">
           Perfil guardado.
         </p>
       )}

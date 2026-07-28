@@ -14,7 +14,7 @@ export function AnonymousCta() {
         enterAnonymous();
         router.push("/analyze");
       }}
-      className="w-full rounded-md border border-foreground/20 px-4 py-2.5 text-sm font-medium sm:w-auto"
+      className="w-full rounded-md border border-brand-dark/50 px-4 py-2.5 text-sm font-medium text-brand-dark transition-colors hover:bg-brand-soft sm:w-auto"
     >
       Probar sin cuenta
     </button>

@@ -289,8 +289,8 @@ export function ProfileForm({
       )}
 
       {preview && (
-        <div className="rounded-md border border-foreground/10 bg-foreground/5 px-4 py-3 text-sm">
-          <p className="font-medium">Target calculado</p>
+        <div className="rounded-md border border-brand-dark/20 bg-brand-soft px-4 py-3 text-sm">
+          <p className="font-medium text-brand-on-soft">Target calculado</p>
           <p className="text-foreground/70">
             TDEE {preview.tdee} kcal · por comida: {preview.mealKcal} kcal / {preview.mealProtein}g
             proteína
@@ -301,7 +301,7 @@ export function ProfileForm({
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-md bg-foreground px-3 py-2 text-sm font-medium text-background disabled:opacity-50"
+        className="w-full rounded-md bg-brand-dark px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-darker disabled:opacity-50"
       >
         {isSubmitting ? "Guardando…" : (submitLabel ?? "Guardar perfil")}
       </button>

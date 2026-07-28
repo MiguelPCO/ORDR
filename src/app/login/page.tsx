@@ -17,7 +17,7 @@ export default async function LoginPage({
         </div>
 
         {params.justSignedUp && (
-          <p className="rounded-md bg-green-500/10 px-3 py-2 text-sm text-green-700 dark:text-green-400">
+          <p className="rounded-md bg-brand-soft px-3 py-2 text-sm text-brand-on-soft">
             Cuenta creada. Inicia sesión para continuar.
           </p>
         )}
@@ -55,7 +55,7 @@ export default async function LoginPage({
           </div>
           <button
             type="submit"
-            className="w-full rounded-md bg-foreground px-3 py-2 text-sm font-medium text-background"
+            className="w-full rounded-md bg-brand-dark px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-darker"
           >
             Entrar
           </button>

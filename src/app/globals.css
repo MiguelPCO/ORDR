@@ -1,13 +1,36 @@
 @import "tailwindcss";
 
+/* Paleta de marca ORDR — regla 60-30-10: blanco/base (60%), verde (30%), amarillo (10%).
+   Los colores del semáforo (verdict rojo/ambar/verde en DishResultCard) son semánticos y
+   quedan fuera de esta paleta de marca a propósito: no deben confundirse con el acento visual.
+
+   Contraste verificado (WCAG AA, 4.5:1 texto normal / 3:1 texto grande):
+   - brand-dark (#047857) vs blanco = 5.49:1 -> texto/botones sobre fondo blanco.
+   - brand-darker (#065f46) vs blanco = ~7:1 -> hover de botones.
+   - accent-dark (#854d0e) vs accent-soft (#fef9c3) = 6.37:1 -> chips/badges.
+   - brand (#059669) vs blanco = 3.77:1 -> solo texto GRANDE (logo) o decorativo, nunca texto normal. */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --brand: #059669;
+  --brand-dark: #047857;
+  --brand-darker: #065f46;
+  --brand-soft: #ecfdf5;
+  --brand-on-soft: #047857;
+  --accent-soft: #fef9c3;
+  --accent-dark: #854d0e;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-darker: var(--brand-darker);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-on-soft: var(--brand-on-soft);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-dark: var(--accent-dark);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -16,6 +39,12 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --brand: #34d399;
+    /* brand-dark/brand-darker se mantienen: son el relleno de botones (con texto blanco
+       encima), su contraste depende de sí mismos, no del fondo de página. */
+    --brand-soft: #052e1f;
+    --brand-on-soft: #6ee7b7;
+    /* accent-soft/accent-dark tampoco cambian: el chip lleva su propio fondo pálido siempre. */
   }
 }
 
@@ -23,4 +52,8 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+:focus-visible {
+  outline-color: var(--brand);
 }

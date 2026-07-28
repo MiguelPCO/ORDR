@@ -38,7 +38,7 @@ export default async function HistoryPage() {
             <li key={a.id}>
               <Link
                 href={`/history/${a.id}`}
-                className="flex items-center justify-between rounded-lg border border-foreground/10 px-4 py-3 hover:bg-foreground/5"
+                className="flex items-center justify-between rounded-lg border border-foreground/10 px-4 py-3 transition-colors hover:border-brand/30 hover:bg-brand-soft"
               >
                 <span>
                   {new Date(a.created_at).toLocaleDateString("es-ES", {
