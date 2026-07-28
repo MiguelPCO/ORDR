@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { hasHardConflict } from "./scoring";
+import { hasHardConflict, scoreDish } from "./scoring";
 
 const macros = (overrides: Partial<{ kcal: number; protein_g: number; carbs_g: number; fat_g: number }>) => ({
   kcal: 500,
@@ -47,5 +47,18 @@ describe("hasHardConflict", () => {
 
   it("returns false when grounded is null and no conflicts (approx-only fallback, no numeric check possible)", () => {
     expect(hasHardConflict([], null, "none", 20, 20)).toBe(false);
+  });
+
+  it("does not flag when grounded fat_g exactly equals fatLimitG (strict > semantics)", () => {
+    const grounded = macros({ fat_g: 20 });
+    expect(hasHardConflict([], grounded, "none", 20, null)).toBe(false);
+  });
+});
+
+describe("scoreDish", () => {
+  it("returns red with fitScore 0 whenever hardRed is true, regardless of macros", () => {
+    const macros = { kcal: 500, protein_g: 30, carbs_g: 40, fat_g: 15 };
+    const target = { mealKcal: 700, mealProtein: 45 };
+    expect(scoreDish(macros, target, "cut", true)).toEqual({ verdict: "red", fitScore: 0 });
   });
 });
