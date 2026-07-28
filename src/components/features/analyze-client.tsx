@@ -197,7 +197,7 @@ export function AnalyzeClient({
               <input
                 id="sessionFatLimitG"
                 type="number"
-                placeholder="sin límite"
+                placeholder={profile.fatLimitG != null ? `perfil: ${profile.fatLimitG} g` : "sin límite"}
                 value={sessionFatLimitG}
                 onChange={(e) =>
                   setSessionFatLimitG(e.target.value === "" ? "" : Number(e.target.value))
@@ -212,7 +212,7 @@ export function AnalyzeClient({
               <input
                 id="sessionCarbLimitG"
                 type="number"
-                placeholder="sin límite"
+                placeholder={profile.carbLimitG != null ? `perfil: ${profile.carbLimitG} g` : "sin límite"}
                 value={sessionCarbLimitG}
                 onChange={(e) =>
                   setSessionCarbLimitG(e.target.value === "" ? "" : Number(e.target.value))
