@@ -1,54 +1,87 @@
 import type { AnalyzeResponse } from "@/schemas";
+import { Ring } from "@/components/features/score-ring";
 
 type Dish = AnalyzeResponse["dishes"][number];
 
-const VERDICT_STYLE: Record<Dish["verdict"], { dot: string; label: string; text: string }> = {
-  green: { dot: "bg-green-500", label: "Come esto", text: "text-green-700 dark:text-green-400" },
-  amber: { dot: "bg-amber-500", label: "Con matices", text: "text-amber-700 dark:text-amber-400" },
-  red: { dot: "bg-red-500", label: "Evita", text: "text-red-700 dark:text-red-400" },
+const VERDICT_STYLE: Record<Dish["verdict"], { label: string; text: string; bg: string; band: string; ring: string }> = {
+  green: {
+    label: "Come esto",
+    text: "text-sem-green",
+    bg: "bg-sem-green-bg",
+    band: "bg-sem-green",
+    ring: "var(--color-sem-green)",
+  },
+  amber: {
+    label: "Con matices",
+    text: "text-sem-amber",
+    bg: "bg-sem-amber-bg",
+    band: "bg-sem-amber",
+    ring: "var(--color-sem-amber)",
+  },
+  red: {
+    label: "Evita",
+    text: "text-sem-red",
+    bg: "bg-sem-red-bg",
+    band: "bg-sem-red",
+    ring: "var(--color-sem-red)",
+  },
 };
 
 function MacroRow({ label, m }: { label: string; m: { kcal: number; protein_g: number; carbs_g: number; fat_g: number } }) {
   return (
-    <p className="text-xs text-foreground/60">
+    <p className="text-caption text-ink-soft tabular-nums">
       {label}: {Math.round(m.kcal)} kcal · P {Math.round(m.protein_g)}g · C {Math.round(m.carbs_g)}g · G{" "}
       {Math.round(m.fat_g)}g
     </p>
   );
 }
 
+function MacroChips({ m }: { m: { kcal: number; protein_g: number; carbs_g: number; fat_g: number } }) {
+  return (
+    <div className="mt-2 flex flex-wrap gap-1.5 text-caption text-ink-soft tabular-nums">
+      <span className="rounded-full bg-surface-tint px-2 py-0.5">{Math.round(m.kcal)} kcal</span>
+      <span className="rounded-full bg-surface-tint px-2 py-0.5">P {Math.round(m.protein_g)}g</span>
+      <span className="rounded-full bg-surface-tint px-2 py-0.5">C {Math.round(m.carbs_g)}g</span>
+      <span className="rounded-full bg-surface-tint px-2 py-0.5">G {Math.round(m.fat_g)}g</span>
+    </div>
+  );
+}
+
 export function DishResultCard({ dish }: { dish: Dish }) {
   const style = VERDICT_STYLE[dish.verdict];
+  const primaryMacros = dish.groundedMacros ?? dish.approxMacros;
 
   return (
-    <div className="dish-card rounded-lg border border-foreground/10 p-4">
+    <div className="dish-card relative overflow-hidden rounded-lg border border-line bg-surface p-4 pl-5">
+      <span className={`absolute inset-y-0 left-0 w-1 ${style.band}`} aria-hidden />
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${style.dot}`} aria-hidden />
-          <h3 className="font-medium">{dish.name}</h3>
+        <div className="flex items-center gap-3">
+          <Ring segments={[{ value: dish.fitScore, colorVar: style.ring }]} size={28} strokeWidth={3} total={100} />
+          <h3 className="font-display text-card-title font-semibold text-ink">{dish.name}</h3>
         </div>
-        <span className={`shrink-0 text-xs font-medium ${style.text}`}>
-          {style.label} · {dish.fitScore}
+        <span className={`shrink-0 rounded-full px-2 py-0.5 text-caption font-medium ${style.bg} ${style.text}`}>
+          {style.label}
         </span>
       </div>
-      <p className="mt-1 text-sm text-foreground/70">{dish.reason}</p>
+      <p className="mt-1 text-body-sm text-ink-soft">{dish.reason}</p>
+      <MacroChips m={primaryMacros} />
       {dish.conflicts.length > 0 && (
-        <ul className="mt-2 list-disc pl-5 text-xs text-red-700 dark:text-red-400">
+        <ul className="mt-2 list-disc pl-5 text-caption text-sem-red">
           {dish.conflicts.map((c) => (
             <li key={c}>{c}</li>
           ))}
         </ul>
       )}
 
-      <details className="mt-3 text-sm">
-        <summary className="cursor-pointer text-foreground/60">Detalle</summary>
+      <details className="mt-3 text-body-sm">
+        <summary className="cursor-pointer text-ink-soft">Detalle</summary>
         <div className="mt-2 space-y-1">
-          {dish.assumptions && <p className="text-xs text-foreground/60">Supuesto: {dish.assumptions}</p>}
+          {dish.assumptions && <p className="text-caption text-ink-soft">Supuesto: {dish.assumptions}</p>}
           <MacroRow label="Estimado (LLM)" m={dish.approxMacros} />
           {dish.groundedMacros ? (
             <MacroRow label={`Fundado (confianza: ${dish.groundedMacros.confidence})`} m={dish.groundedMacros} />
           ) : (
-            <p className="text-xs text-foreground/60">
+            <p className="text-caption text-ink-soft">
               Fundado: no disponible (API de nutrición falló para este plato, usando estimación del LLM).
             </p>
           )}
