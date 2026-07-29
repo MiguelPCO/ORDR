@@ -51,7 +51,7 @@ Ambos alimentan el mismo estado `files: File[]` que ya existe en `AnalyzeClient`
 
 ### 3.4 Skeleton loader (nuevo componente `AnalyzeSkeleton`)
 
-- Cuando `status === "loading"`, en vez de solo deshabilitar el botón con texto, se renderiza en el área de resultados una lista de 4 tarjetas fantasma (mismo tamaño/forma que `DishResultCard`, con bloques grises `animate-pulse` de Tailwind en vez de contenido). El botón sigue existiendo arriba pero ya no es la única señal de progreso.
+- Cuando `status === "loading"`, el `return` anticipado de `AnalyzeClient` reemplaza por completo el formulario (incluido el botón "Analizar carta") por `AnalyzeSkeleton`: una lista de 4 tarjetas fantasma (mismo tamaño/forma que `DishResultCard`, con bloques grises `animate-pulse` de Tailwind en vez de contenido). No es un complemento visual junto al botón — es la única UI visible durante la espera.
 
 ### 3.5 Hero card + chips de filtro (dentro de `AnalyzeResults`)
 
@@ -85,3 +85,20 @@ Sin cambios en el pipeline. Todo lo anterior consume/deriva de estado que ya exi
 - Rediseño de `/history` y `/profile` más allá de la sección "Cuenta" añadida en 3.6.
 - Cualquier cambio a `/api/analyze`, schemas, o el motor de scoring.
 - PWA completa (manifest, service worker, instalación) — no se pidió y es un salto de alcance mayor; si se quiere más adelante, es un spec propio.
+
+## 8. Verificación
+
+Implementado vía `docs/superpowers/plans/2026-07-28-analyze-mobile-ux.md` (11 tareas, subagent-driven-development, worktree `analyze-mobile-ux`). Cada tarea pasó su propia revisión (spec + calidad) antes de continuar a la siguiente; solo hallazgos Minor quedaron diferidos (ver el ledger `.superpowers/sdd/2026-07-28-analyze-mobile-ux/progress.md` de ese workspace, o el resumen en el mensaje de cierre).
+
+**Verificación estática:** `npx tsc --noEmit`, `npx vitest run` (11/11, incluye los 3 nuevos tests de `rotatedDimensions`), `npm run build` — los tres limpios tras cada tarea y en la verificación final agregada.
+
+**Verificación manual (Playwright, viewport 390×844, contra el pipeline real):**
+- Bottom tab bar visible y funcional en `/analyze`, `/profile`, `/history`; el tab de la ruta activa se resalta en verde (`text-brand-dark`), los otros dos en gris — confirmado en las tres rutas.
+- Los dos inputs de archivo verificados vía `document.querySelectorAll('input[type="file"]')`: cámara (`accept="image/*"`, `capture="environment"`, `multiple=false`) y galería (`accept="image/jpeg,image/png,image/webp,application/pdf"`, `multiple=true`) — ambos ocultos, cada uno detrás de su botón visible.
+- Subida real de imagen → miniatura en `FilePreviewStrip` → rotar 90° → confirmado visualmente que el contenido gira (no un no-op) y 0 errores de consola.
+- Envío real a `/api/analyze` (imagen rotada, carta real de 19 platos) → skeleton de 4 tarjetas fantasma visible mientras la llamada estuvo en curso (51s) → al completarse, `AnalyzeHeroCard` mostró "19 platos analizados" / "2 en verde" con la barra de proporción correcta, y `VerdictFilterChips` mostró los 4 conteos exactos (Todos 19, Verde 2, Ámbar 8, Rojo 9); se probó filtrar por Verde (mostró exactamente 2) y por Rojo (mostró exactamente 9).
+- `/profile` autenticado: sección "Cuenta" muestra el email real y el botón "Salir" arriba del formulario, con el header global reducido solo al wordmark "ORDR".
+- El resultado se persistió correctamente en `/history` (nueva entrada "19 platos · 2 en verde" junto a la de Sprint 4), confirmando que Task 6/7 no rompieron el flujo de persistencia existente.
+- 0 errores ni warnings de consola nuevos en todo el recorrido.
+
+**No verificado en esta pasada** (no crítico, dejado para revisión visual futura si hace falta): flujo anónimo completo de la sección "Cuenta" — por diseño, `/profile` sigue redirigiendo a `/login` para usuarios anónimos (ver la desviación documentada en el plan), así que no aplica un caso anónimo aquí. Tampoco se ejercitó manualmente el estado vacío de los chips de filtro (mensaje "Ningún plato en esta categoría" de la sección 5) ni la ruta de error de rotación de imagen ("No se pudo rotar esta imagen") — el pase de Playwright solo cubrió Verde y Rojo, ambos con resultados no vacíos.
