@@ -41,6 +41,13 @@ export function ThemeToggle() {
     document.documentElement.setAttribute("data-theme", next);
   }
 
+  if (theme === null) {
+    // El script inline de layout.tsx ya resolvió data-theme antes del paint, pero React
+    // aún no lo leyó en este render — mostrar un hueco en vez de adivinar el ícono (evita
+    // parpadeo de ícono/aria-label incorrecto en modo oscuro).
+    return <span className="inline-block h-[18px] w-[18px] p-1.5" aria-hidden />;
+  }
+
   return (
     <button
       type="button"

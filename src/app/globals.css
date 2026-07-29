@@ -87,43 +87,20 @@
   --text-donut: 3.5rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #14181a;
-    --foreground: #f4f1e8;
-    --brand: #34d399;
-    /* brand-dark/brand-darker se mantienen: son el relleno de botones (con texto blanco
-       encima), su contraste depende de sí mismos, no del fondo de página. */
-    --brand-soft: #052e1f;
-    --brand-on-soft: #6ee7b7;
-    /* accent-soft/accent-dark tampoco cambian: el chip lleva su propio fondo pálido siempre. */
-
-    --surface: #1c221d;
-    --surface-tint: #232b24;
-    --ink-soft: #a9b3a6;
-    --line: #2e362f;
-    --primary: #34d399;
-    --primary-deep: #4ade80;
-    --accent-sun: #f2c94c;
-    --sem-green: #4ade80;
-    --sem-green-bg: #123321;
-    --sem-amber: #f5a623;
-    --sem-amber-bg: #332405;
-    --sem-red: #f87171;
-    --sem-red-bg: #3b1512;
-    --grad-hero-from: #16241c;
-    --grad-hero-to: #14181a;
-  }
-}
-
-/* Toggle manual (theme-toggle.tsx): un atributo [data-theme] en <html> pesa más en
-   especificidad que el bloque @media de arriba, así que gana sin importar el OS. */
+/* Tema oscuro: única fuente de verdad es [data-theme="dark"] en <html>, puesto por el
+   script inline de layout.tsx (corre antes del primer paint) — resuelve localStorage si el
+   usuario ya eligió, o system prefers-color-scheme si no. No hay bloque @media aparte: eso
+   duplicaría estos valores en dos sitios y uno se desincroniza con el tiempo. El toggle
+   manual (theme-toggle.tsx) solo cambia el atributo + localStorage. */
 :root[data-theme="dark"] {
   --background: #14181a;
   --foreground: #f4f1e8;
   --brand: #34d399;
+  /* brand-dark/brand-darker se mantienen: son el relleno de botones (con texto blanco
+     encima), su contraste depende de sí mismos, no del fondo de página. */
   --brand-soft: #052e1f;
   --brand-on-soft: #6ee7b7;
+  /* accent-soft/accent-dark tampoco cambian: el chip lleva su propio fondo pálido siempre. */
   --surface: #1c221d;
   --surface-tint: #232b24;
   --ink-soft: #a9b3a6;
@@ -139,29 +116,6 @@
   --sem-red-bg: #3b1512;
   --grad-hero-from: #16241c;
   --grad-hero-to: #14181a;
-}
-
-:root[data-theme="light"] {
-  --background: #f7f4ec;
-  --foreground: #1e2620;
-  --brand: #059669;
-  --brand-soft: #ecfdf5;
-  --brand-on-soft: #047857;
-  --surface: #ffffff;
-  --surface-tint: #eff3ea;
-  --ink-soft: #5c665e;
-  --line: #e2dfd3;
-  --primary: #22a45d;
-  --primary-deep: #166b3d;
-  --accent-sun: #f2c94c;
-  --sem-green: #22a45d;
-  --sem-green-bg: #e3f3e9;
-  --sem-amber: #d9911f;
-  --sem-amber-bg: #fbf0d9;
-  --sem-red: #d14b3c;
-  --sem-red-bg: #f9e4e0;
-  --grad-hero-from: #dcefe2;
-  --grad-hero-to: #f7f4ec;
 }
 
 body {
