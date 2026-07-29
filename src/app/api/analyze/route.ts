@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { AnalyzeRequestSchema, AnalyzeResponseSchema, Verdict } from "@/schemas";
 import { readMenu, type MenuImageInput } from "@/lib/llm/read-menu";
 import { groundMacrosBatch } from "@/lib/nutrition/api-ninjas";
-import { scoreDish, hasHardConflict, normalizeVerdict, type Target } from "@/lib/nutrition/scoring";
+import { scoreDish, hardLimitReasons, normalizeVerdict, type Target } from "@/lib/nutrition/scoring";
 import { createClient } from "@/lib/supabase/server";
 
 const ALLOWED_MEDIA_TYPES = new Set<MenuImageInput["mediaType"]>([
@@ -87,13 +87,14 @@ export async function POST(request: NextRequest) {
 
   const scoredDishes = llmResult.dishes.map((dish, i) => {
     const groundedMacros = grounded[i];
-    const hardRed = hasHardConflict(
-      dish.conflicts,
+    const limitReasons = hardLimitReasons(
       groundedMacros,
       profileSnapshot.diet,
       profileSnapshot.fatLimitG,
       profileSnapshot.carbLimitG
     );
+    const hardRed = dish.conflicts.length > 0 || limitReasons.length > 0;
+    const conflicts = [...dish.conflicts, ...limitReasons];
     const macrosForScoring = groundedMacros ?? dish.approx;
     const { verdict: engineVerdict, fitScore } = scoreDish(macrosForScoring, target, goal, hardRed);
 
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
       reason: dish.reason,
       nutritionQuery: dish.nutrition_query,
       assumptions: dish.assumptions,
-      conflicts: dish.conflicts,
+      conflicts,
       approxMacros: dish.approx,
       groundedMacros,
       verdict,

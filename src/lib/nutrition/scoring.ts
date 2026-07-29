@@ -65,9 +65,31 @@ export function hasHardConflict(
   fatLimitG: number | null = null,
   carbLimitG: number | null = null
 ): boolean {
-  if (conflicts.length > 0) return true;
+  return conflicts.length > 0 || hardLimitReasons(grounded, diet, fatLimitG, carbLimitG).length > 0;
+}
+
+/**
+ * Razones legibles cuando el hard-conflict viene de un límite numérico (grasa/carbos), no de
+ * `conflicts[]` (LLM). Sin esto la UI no explicaba por qué un plato caía en rojo/0 al chocar
+ * con un límite: `dish-result-card.tsx` solo pinta `conflicts[]`, así que estas razones se
+ * anexan ahí en `route.ts` para que el usuario vea el motivo real.
+ */
+export function hardLimitReasons(
+  grounded: Macros | null,
+  diet: Diet,
+  fatLimitG: number | null = null,
+  carbLimitG: number | null = null
+): string[] {
+  if (!grounded) return [];
+  const reasons: string[] = [];
   const effectiveCarbLimit = carbLimitG ?? (diet === "keto" ? KETO_CARB_LIMIT_G : null);
-  if (grounded && effectiveCarbLimit !== null && grounded.carbs_g > effectiveCarbLimit) return true;
-  if (grounded && fatLimitG !== null && grounded.fat_g > fatLimitG) return true;
-  return false;
+  if (effectiveCarbLimit !== null && grounded.carbs_g > effectiveCarbLimit) {
+    reasons.push(
+      `Supera límite de carbohidratos (${Math.round(grounded.carbs_g)}g > ${effectiveCarbLimit}g/comida)`
+    );
+  }
+  if (fatLimitG !== null && grounded.fat_g > fatLimitG) {
+    reasons.push(`Supera límite de grasa (${Math.round(grounded.fat_g)}g > ${fatLimitG}g/comida)`);
+  }
+  return reasons;
 }

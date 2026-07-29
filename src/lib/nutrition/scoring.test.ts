@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { hasHardConflict, scoreDish } from "./scoring";
+import { hasHardConflict, hardLimitReasons, scoreDish } from "./scoring";
 
 const macros = (overrides: Partial<{ kcal: number; protein_g: number; carbs_g: number; fat_g: number }>) => ({
   kcal: 500,
@@ -52,6 +52,44 @@ describe("hasHardConflict", () => {
   it("does not flag when grounded fat_g exactly equals fatLimitG (strict > semantics)", () => {
     const grounded = macros({ fat_g: 20 });
     expect(hasHardConflict([], grounded, "none", 20, null)).toBe(false);
+  });
+});
+
+describe("hardLimitReasons", () => {
+  it("returns empty array when grounded is null", () => {
+    expect(hardLimitReasons(null, "none", 20, 100)).toEqual([]);
+  });
+
+  it("returns empty array when macros are within both limits", () => {
+    const grounded = macros({ fat_g: 15, carbs_g: 40 });
+    expect(hardLimitReasons(grounded, "none", 20, 100)).toEqual([]);
+  });
+
+  it("flags a fatty dish against a strict fatLimitG (Casa Benjamín: fatLimitG 20g, T-bone-style dish)", () => {
+    const grounded = macros({ fat_g: 34, carbs_g: 0 });
+    const reasons = hardLimitReasons(grounded, "none", 20, 100);
+    expect(reasons).toEqual(["Supera límite de grasa (34g > 20g/comida)"]);
+  });
+
+  it("flags carbs over an explicit carbLimitG with a readable message", () => {
+    const grounded = macros({ fat_g: 5, carbs_g: 130 });
+    const reasons = hardLimitReasons(grounded, "none", null, 100);
+    expect(reasons).toEqual(["Supera límite de carbohidratos (130g > 100g/comida)"]);
+  });
+
+  it("can return both reasons when a dish exceeds fat and carb limits at once", () => {
+    const grounded = macros({ fat_g: 34, carbs_g: 130 });
+    const reasons = hardLimitReasons(grounded, "none", 20, 100);
+    expect(reasons).toEqual([
+      "Supera límite de carbohidratos (130g > 100g/comida)",
+      "Supera límite de grasa (34g > 20g/comida)",
+    ]);
+  });
+
+  it("uses the keto 20g default when carbLimitG is not set", () => {
+    const grounded = macros({ fat_g: 5, carbs_g: 25 });
+    const reasons = hardLimitReasons(grounded, "keto", null, null);
+    expect(reasons).toEqual(["Supera límite de carbohidratos (25g > 20g/comida)"]);
   });
 });
 
