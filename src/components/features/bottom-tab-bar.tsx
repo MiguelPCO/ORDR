@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-function AnalyzeIcon({ className }: { className?: string }) {
+function AnalyzeIcon({ className, active }: { className?: string; active?: boolean }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className={className}>
       <path
@@ -11,25 +11,26 @@ function AnalyzeIcon({ className }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <circle cx="12" cy="12" r="3.5" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="3.5" strokeLinecap="round" strokeLinejoin="round" fill={active ? "currentColor" : "none"} />
     </svg>
   );
 }
 
-function ProfileIcon({ className }: { className?: string }) {
+function ProfileIcon({ className, active }: { className?: string; active?: boolean }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className={className}>
-      <circle cx="12" cy="8" r="3.2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="8" r="3.2" strokeLinecap="round" strokeLinejoin="round" fill={active ? "currentColor" : "none"} />
       <path d="M5 20c1.2-3.5 4-5 7-5s5.8 1.5 7 5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
-function HistoryIcon({ className }: { className?: string }) {
+function HistoryIcon({ className, active }: { className?: string; active?: boolean }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className={className}>
       <circle cx="12" cy="12" r="8" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M12 8v4l3 2" strokeLinecap="round" strokeLinejoin="round" />
+      {active && <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" />}
     </svg>
   );
 }
@@ -45,7 +46,7 @@ export function BottomTabBar() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-10 flex border-t border-foreground/10 bg-background pb-[env(safe-area-inset-bottom)]"
+      className="fixed inset-x-0 bottom-0 z-10 flex border-t border-line bg-surface pb-[env(safe-area-inset-bottom)]"
       aria-label="Navegación principal"
     >
       {TABS.map(({ href, label, Icon }) => {
@@ -55,11 +56,11 @@ export function BottomTabBar() {
             key={href}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-xs font-medium transition-colors ${
-              active ? "text-brand-dark" : "text-foreground/60"
+            className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-caption transition-colors ${
+              active ? "font-semibold text-primary-deep" : "font-medium text-ink-soft"
             }`}
           >
-            <Icon className="h-5 w-5" />
+            <Icon className="h-5 w-5" active={active} />
             {label}
           </Link>
         );

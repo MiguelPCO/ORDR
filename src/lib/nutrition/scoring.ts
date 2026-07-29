@@ -50,24 +50,39 @@ export function normalizeVerdict(v: string): Verdict {
 }
 
 /**
- * Guardarraíl duro (PRD §9): alérgeno presente o conflicto de dieta → rojo siempre, antes de puntuar.
- * `conflicts` viene del LLM (única fuente posible para "¿qué hay en el plato?"); el chequeo de
- * carbos en keto es del lado del código porque ya tenemos macros fundados y numéricos.
- *
- * `fatLimitG`/`carbLimitG` son límites opcionales (gramos por comida) que el usuario puede fijar en su
- * perfil o ajustar por sesión; si `carbLimitG` no se especifica y la dieta es keto, se usa
- * `KETO_CARB_LIMIT_G` (20g) como default — mismo comportamiento que antes de que existieran estos params.
+ * Formatea gramos para el mensaje de `hardLimitReasons`: entero si es un valor entero, si no
+ * redondea HACIA ARRIBA a 1 decimal (no `Math.round`). Con `Math.round`, un exceso real pero
+ * diminuto (p.ej. 20.04g contra un límite de 20g, típico al sumar macros de ingredientes)
+ * redondearía a 20.0 y produciría "20g > 20g/comida" — el mismo bug que esto arregla, solo
+ * más difícil de ver. `Math.ceil` garantiza que si x > límite (entero), el valor impreso
+ * también sea > límite.
  */
-export function hasHardConflict(
-  conflicts: string[],
+function formatGrams(x: number): number {
+  return Number.isInteger(x) ? x : Math.ceil(x * 10) / 10;
+}
+
+/**
+ * Razones legibles cuando el hard-conflict viene de un límite numérico (grasa/carbos), no de
+ * `conflicts[]` (LLM). Sin esto la UI no explicaba por qué un plato caía en rojo/0 al chocar
+ * con un límite: `dish-result-card.tsx` solo pinta `conflicts[]`, así que estas razones se
+ * anexan ahí en `route.ts` para que el usuario vea el motivo real.
+ */
+export function hardLimitReasons(
   grounded: Macros | null,
   diet: Diet,
   fatLimitG: number | null = null,
   carbLimitG: number | null = null
-): boolean {
-  if (conflicts.length > 0) return true;
+): string[] {
+  if (!grounded) return [];
+  const reasons: string[] = [];
   const effectiveCarbLimit = carbLimitG ?? (diet === "keto" ? KETO_CARB_LIMIT_G : null);
-  if (grounded && effectiveCarbLimit !== null && grounded.carbs_g > effectiveCarbLimit) return true;
-  if (grounded && fatLimitG !== null && grounded.fat_g > fatLimitG) return true;
-  return false;
+  if (effectiveCarbLimit !== null && grounded.carbs_g > effectiveCarbLimit) {
+    reasons.push(
+      `Supera límite de carbohidratos (${formatGrams(grounded.carbs_g)}g > ${effectiveCarbLimit}g/comida)`
+    );
+  }
+  if (fatLimitG !== null && grounded.fat_g > fatLimitG) {
+    reasons.push(`Supera límite de grasa (${formatGrams(grounded.fat_g)}g > ${fatLimitG}g/comida)`);
+  }
+  return reasons;
 }

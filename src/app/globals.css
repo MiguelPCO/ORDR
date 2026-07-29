@@ -8,10 +8,32 @@
    - brand-dark (#047857) vs blanco = 5.49:1 -> texto/botones sobre fondo blanco.
    - brand-darker (#065f46) vs blanco = ~7:1 -> hover de botones.
    - accent-dark (#854d0e) vs accent-soft (#fef9c3) = 6.37:1 -> chips/badges.
-   - brand (#059669) vs blanco = 3.77:1 -> solo texto GRANDE (logo) o decorativo, nunca texto normal. */
+   - brand (#059669) vs blanco = 3.77:1 -> solo texto GRANDE (logo) o decorativo, nunca texto normal.
+
+   Auditoria 2026-07-29 (tanda Quick Wins) — canvas crema + familia cromatica ampliada.
+   Conviven con brand/accent de arriba (sin tocar, gobiernan botones/CTA fuera de esta
+   tanda): canvas/ink reemplazan background/foreground (arregla el "fondo negro puro" en
+   toda la app via las mismas dos variables que body ya consumia); surface/line/primary/
+   accent-sun/sem-* son nuevos, para Resultado/Analizar/nav.
+   Contraste verificado (WCAG AA):
+   - ink (#1e2620) vs canvas (#f7f4ec) = ~15:1 -> texto normal.
+   - ink-soft (#5c665e) vs canvas (#f7f4ec) = ~5.3:1 -> texto normal.
+   - primary-deep (#166b3d) vs canvas (#f7f4ec) = ~7.9:1 -> texto/hover.
+
+   Auditoria 2026-07-30 (fix wave, texto normal 12-14px => piso 4.5:1, no 3:1) — los sem-*
+   de abajo se oscurecieron en el mismo tono (mismo hue/sat, solo baja L) para pasar 4.5:1
+   reales contra su -bg; sem-red ademas se valido contra --surface blanco porque tambien se
+   usa asi (bullets de conflictos en dish-result-card):
+   - sem-green (#197a45) vs sem-green-bg (#e3f3e9) = 4.67:1 -> texto normal.
+   - sem-amber (#926115) vs sem-amber-bg (#fbf0d9) = 4.71:1 -> texto normal.
+   - sem-red (#b93a2c) vs sem-red-bg (#f9e4e0) = 4.64:1 -> texto normal.
+   - sem-red (#b93a2c) vs surface (#ffffff) = 5.67:1 -> texto normal (bullets de conflictos).
+   - on-primary (#052e1f) vs primary claro (#22a45d) = 4.61:1 -> texto normal.
+   - on-primary (#052e1f) vs primary oscuro (#34d399) = 7.71:1 -> texto normal. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+  --background: #f7f4ec;
+  --foreground: #1e2620;
   --brand: #059669;
   --brand-dark: #047857;
   --brand-darker: #065f46;
@@ -19,6 +41,23 @@
   --brand-on-soft: #047857;
   --accent-soft: #fef9c3;
   --accent-dark: #854d0e;
+
+  --surface: #ffffff;
+  --surface-tint: #eff3ea;
+  --ink-soft: #5c665e;
+  --line: #e2dfd3;
+  --primary: #22a45d;
+  --primary-deep: #166b3d;
+  --on-primary: #052e1f;
+  --accent-sun: #f2c94c;
+  --sem-green: #197a45;
+  --sem-green-bg: #e3f3e9;
+  --sem-amber: #926115;
+  --sem-amber-bg: #fbf0d9;
+  --sem-red: #b93a2c;
+  --sem-red-bg: #f9e4e0;
+  --grad-hero-from: #dcefe2;
+  --grad-hero-to: #f7f4ec;
 }
 
 @theme inline {
@@ -31,27 +70,75 @@
   --color-brand-on-soft: var(--brand-on-soft);
   --color-accent-soft: var(--accent-soft);
   --color-accent-dark: var(--accent-dark);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-canvas: var(--background);
+  --color-ink: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-tint: var(--surface-tint);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-primary: var(--primary);
+  --color-primary-deep: var(--primary-deep);
+  --color-on-primary: var(--on-primary);
+  --color-accent-sun: var(--accent-sun);
+  --color-sem-green: var(--sem-green);
+  --color-sem-green-bg: var(--sem-green-bg);
+  --color-sem-amber: var(--sem-amber);
+  --color-sem-amber-bg: var(--sem-amber-bg);
+  --color-sem-red: var(--sem-red);
+  --color-sem-red-bg: var(--sem-red-bg);
+
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-bricolage);
+
+  --text-caption: 0.75rem;
+  --text-body-sm: 0.875rem;
+  --text-body: 1rem;
+  --text-card-title: 1.25rem;
+  --text-h2: 1.5rem;
+  --text-h1: 2rem;
+  --text-donut: 3.5rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --brand: #34d399;
-    /* brand-dark/brand-darker se mantienen: son el relleno de botones (con texto blanco
-       encima), su contraste depende de sí mismos, no del fondo de página. */
-    --brand-soft: #052e1f;
-    --brand-on-soft: #6ee7b7;
-    /* accent-soft/accent-dark tampoco cambian: el chip lleva su propio fondo pálido siempre. */
-  }
+/* Tema oscuro: única fuente de verdad es [data-theme="dark"] en <html>, puesto por el
+   script inline de layout.tsx (corre antes del primer paint) — resuelve localStorage si el
+   usuario ya eligió, o system prefers-color-scheme si no. No hay bloque @media aparte: eso
+   duplicaría estos valores en dos sitios y uno se desincroniza con el tiempo. El toggle
+   manual (theme-toggle.tsx) solo cambia el atributo + localStorage. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #14181a;
+  --foreground: #f4f1e8;
+  --brand: #34d399;
+  /* brand-dark/brand-darker se mantienen: son el relleno de botones (con texto blanco
+     encima), su contraste depende de sí mismos, no del fondo de página. */
+  --brand-soft: #052e1f;
+  --brand-on-soft: #6ee7b7;
+  /* accent-soft/accent-dark tampoco cambian: el chip lleva su propio fondo pálido siempre. */
+  /* on-primary tampoco se redefine aquí a propósito: no cambia entre temas (#052e1f pasa
+     4.5:1 contra el --primary claro Y el oscuro), y como este bloque comparte elemento
+     (html) con :root, la variable no redefinida cae de vuelta a la de arriba. */
+  --surface: #1c221d;
+  --surface-tint: #232b24;
+  --ink-soft: #a9b3a6;
+  --line: #2e362f;
+  --primary: #34d399;
+  --primary-deep: #4ade80;
+  --accent-sun: #f2c94c;
+  --sem-green: #4ade80;
+  --sem-green-bg: #123321;
+  --sem-amber: #f5a623;
+  --sem-amber-bg: #332405;
+  --sem-red: #f87171;
+  --sem-red-bg: #3b1512;
+  --grad-hero-from: #16241c;
+  --grad-hero-to: #14181a;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
 :focus-visible {

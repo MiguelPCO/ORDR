@@ -11,6 +11,13 @@ const FILTER_LABEL: Record<VerdictFilter, string> = {
 
 const FILTERS: VerdictFilter[] = ["all", "green", "amber", "red"];
 
+const CHIP_STYLE: Record<VerdictFilter, { bg: string; text: string }> = {
+  all: { bg: "bg-surface-tint", text: "text-ink-soft" },
+  green: { bg: "bg-sem-green-bg", text: "text-sem-green" },
+  amber: { bg: "bg-sem-amber-bg", text: "text-sem-amber" },
+  red: { bg: "bg-sem-red-bg", text: "text-sem-red" },
+};
+
 export function VerdictFilterChips({
   dishes,
   value,
@@ -29,20 +36,21 @@ export function VerdictFilterChips({
 
   return (
     <div className="flex gap-2 overflow-x-auto">
-      {FILTERS.map((f) => (
-        <button
-          key={f}
-          type="button"
-          onClick={() => onChange(f)}
-          className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-            value === f
-              ? "border-brand-dark bg-brand-soft text-brand-on-soft"
-              : "border-foreground/15 text-foreground/60"
-          }`}
-        >
-          {FILTER_LABEL[f]} ({counts[f]})
-        </button>
-      ))}
+      {FILTERS.map((f) => {
+        const style = CHIP_STYLE[f];
+        return (
+          <button
+            key={f}
+            type="button"
+            onClick={() => onChange(f)}
+            className={`shrink-0 rounded-full border-2 px-3 py-1 text-caption font-medium transition-colors ${style.bg} ${style.text} ${
+              value === f ? "border-current" : "border-transparent"
+            }`}
+          >
+            {FILTER_LABEL[f]} (<span className="font-bold">{counts[f]}</span>)
+          </button>
+        );
+      })}
     </div>
   );
 }
