@@ -24,10 +24,16 @@ export async function saveProfile(formData: FormData) {
       .split(",")
       .map((a) => a.trim())
       .filter(Boolean),
+    dislikes: String(formData.get("dislikes") ?? "")
+      .split(",")
+      .map((d) => d.trim())
+      .filter(Boolean),
     goal: formData.get("goal"),
     mealsPerDay: Number(formData.get("mealsPerDay")),
     proteinGPerKg: Number(formData.get("proteinGPerKg")),
     manualTdee: formData.get("manualTdee") ? Number(formData.get("manualTdee")) : null,
+    fatLimitG: formData.get("fatLimitG") ? Number(formData.get("fatLimitG")) : null,
+    carbLimitG: formData.get("carbLimitG") ? Number(formData.get("carbLimitG")) : null,
   });
 
   if (!parsed.success) {
@@ -45,10 +51,13 @@ export async function saveProfile(formData: FormData) {
     activity_level: p.activityLevel,
     diet: p.diet,
     allergies: p.allergies,
+    dislikes: p.dislikes,
     goal: p.goal,
     meals_per_day: p.mealsPerDay,
     protein_g_per_kg: p.proteinGPerKg,
     manual_tdee: p.manualTdee,
+    fat_limit_g: p.fatLimitG,
+    carb_limit_g: p.carbLimitG,
     updated_at: new Date().toISOString(),
   });
 

@@ -25,7 +25,7 @@ const images: MenuImageInput[] = paths.map((p) => {
   return { base64: readFileSync(p).toString("base64"), mediaType };
 });
 
-const profile = { diet: "none" as const, allergies: [] as string[] };
+const profile = { diet: "none" as const, allergies: [] as string[], dislikes: [] as string[] };
 
 async function main() {
   const result = await readMenu(images, profile);

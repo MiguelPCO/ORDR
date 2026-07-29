@@ -12,10 +12,13 @@ function makeProfile(overrides: Partial<Profile> = {}): Profile {
     activityLevel: "moderate",
     diet: "none",
     allergies: [],
+    dislikes: [],
     goal: "cut",
     mealsPerDay: 3,
     proteinGPerKg: 2.0,
     manualTdee: null,
+    fatLimitG: null,
+    carbLimitG: null,
     ...overrides,
   };
 }

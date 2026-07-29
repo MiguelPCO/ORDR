@@ -30,6 +30,10 @@ export function AnalyzeClient({
   const profile = initialProfile ?? anonymousProfile;
 
   const [goal, setGoal] = useState<Goal | null>(null);
+  const [sessionAllergiesExtra, setSessionAllergiesExtra] = useState("");
+  const [sessionDislikesExtra, setSessionDislikesExtra] = useState("");
+  const [sessionFatLimitG, setSessionFatLimitG] = useState<number | "">("");
+  const [sessionCarbLimitG, setSessionCarbLimitG] = useState<number | "">("");
   const [files, setFiles] = useState<File[]>([]);
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
@@ -61,6 +65,8 @@ export function AnalyzeClient({
   }
 
   const sessionGoal = goal ?? profile.goal;
+  const effectiveFatLimitG = sessionFatLimitG === "" ? profile.fatLimitG : sessionFatLimitG;
+  const effectiveCarbLimitG = sessionCarbLimitG === "" ? profile.carbLimitG : sessionCarbLimitG;
 
   function handleFiles(fileList: FileList | null) {
     if (!fileList) return;
@@ -94,6 +100,17 @@ export function AnalyzeClient({
           mealProtein: t.mealProtein,
           diet: profile!.diet,
           allergies: profile!.allergies,
+          allergiesExtra: sessionAllergiesExtra
+            .split(",")
+            .map((a) => a.trim())
+            .filter(Boolean),
+          dislikes: profile!.dislikes,
+          dislikesExtra: sessionDislikesExtra
+            .split(",")
+            .map((d) => d.trim())
+            .filter(Boolean),
+          fatLimitG: effectiveFatLimitG,
+          carbLimitG: effectiveCarbLimitG,
         },
       })
     );
@@ -146,6 +163,66 @@ export function AnalyzeClient({
           ))}
         </select>
       </div>
+
+      <details className="rounded-md border border-foreground/20 px-3 py-2">
+        <summary className="cursor-pointer text-sm font-medium">Más filtros</summary>
+        <div className="mt-3 space-y-3">
+          <div className="space-y-1">
+            <label htmlFor="sessionAllergiesExtra" className="text-sm font-medium">
+              Alergias extra para esta carta
+            </label>
+            <input
+              id="sessionAllergiesExtra"
+              value={sessionAllergiesExtra}
+              onChange={(e) => setSessionAllergiesExtra(e.target.value)}
+              className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
+            />
+          </div>
+          <div className="space-y-1">
+            <label htmlFor="sessionDislikesExtra" className="text-sm font-medium">
+              No me gusta extra para esta carta
+            </label>
+            <input
+              id="sessionDislikesExtra"
+              value={sessionDislikesExtra}
+              onChange={(e) => setSessionDislikesExtra(e.target.value)}
+              className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label htmlFor="sessionFatLimitG" className="text-sm font-medium">
+                Límite grasa (g)
+              </label>
+              <input
+                id="sessionFatLimitG"
+                type="number"
+                placeholder={profile.fatLimitG != null ? `perfil: ${profile.fatLimitG} g` : "sin límite"}
+                value={sessionFatLimitG}
+                onChange={(e) =>
+                  setSessionFatLimitG(e.target.value === "" ? "" : Number(e.target.value))
+                }
+                className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
+              />
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="sessionCarbLimitG" className="text-sm font-medium">
+                Límite carbos (g)
+              </label>
+              <input
+                id="sessionCarbLimitG"
+                type="number"
+                placeholder={profile.carbLimitG != null ? `perfil: ${profile.carbLimitG} g` : "sin límite"}
+                value={sessionCarbLimitG}
+                onChange={(e) =>
+                  setSessionCarbLimitG(e.target.value === "" ? "" : Number(e.target.value))
+                }
+                className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
+              />
+            </div>
+          </div>
+        </div>
+      </details>
 
       <div className="space-y-1">
         <label htmlFor="files" className="text-sm font-medium">

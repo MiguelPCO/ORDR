@@ -53,13 +53,21 @@ export function normalizeVerdict(v: string): Verdict {
  * Guardarraíl duro (PRD §9): alérgeno presente o conflicto de dieta → rojo siempre, antes de puntuar.
  * `conflicts` viene del LLM (única fuente posible para "¿qué hay en el plato?"); el chequeo de
  * carbos en keto es del lado del código porque ya tenemos macros fundados y numéricos.
+ *
+ * `fatLimitG`/`carbLimitG` son límites opcionales (gramos por comida) que el usuario puede fijar en su
+ * perfil o ajustar por sesión; si `carbLimitG` no se especifica y la dieta es keto, se usa
+ * `KETO_CARB_LIMIT_G` (20g) como default — mismo comportamiento que antes de que existieran estos params.
  */
 export function hasHardConflict(
   conflicts: string[],
   grounded: Macros | null,
-  diet: Diet
+  diet: Diet,
+  fatLimitG: number | null = null,
+  carbLimitG: number | null = null
 ): boolean {
   if (conflicts.length > 0) return true;
-  if (grounded && diet === "keto" && grounded.carbs_g > KETO_CARB_LIMIT_G) return true;
+  const effectiveCarbLimit = carbLimitG ?? (diet === "keto" ? KETO_CARB_LIMIT_G : null);
+  if (grounded && effectiveCarbLimit !== null && grounded.carbs_g > effectiveCarbLimit) return true;
+  if (grounded && fatLimitG !== null && grounded.fat_g > fatLimitG) return true;
   return false;
 }
