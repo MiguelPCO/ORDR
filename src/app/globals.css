@@ -8,10 +8,21 @@
    - brand-dark (#047857) vs blanco = 5.49:1 -> texto/botones sobre fondo blanco.
    - brand-darker (#065f46) vs blanco = ~7:1 -> hover de botones.
    - accent-dark (#854d0e) vs accent-soft (#fef9c3) = 6.37:1 -> chips/badges.
-   - brand (#059669) vs blanco = 3.77:1 -> solo texto GRANDE (logo) o decorativo, nunca texto normal. */
+   - brand (#059669) vs blanco = 3.77:1 -> solo texto GRANDE (logo) o decorativo, nunca texto normal.
+
+   Auditoria 2026-07-29 (tanda Quick Wins) — canvas crema + familia cromatica ampliada.
+   Conviven con brand/accent de arriba (sin tocar, gobiernan botones/CTA fuera de esta
+   tanda): canvas/ink reemplazan background/foreground (arregla el "fondo negro puro" en
+   toda la app via las mismas dos variables que body ya consumia); surface/line/primary/
+   accent-sun/sem-* son nuevos, para Resultado/Analizar/nav.
+   Contraste verificado (WCAG AA):
+   - ink (#1e2620) vs canvas (#f7f4ec) = ~15:1 -> texto normal.
+   - ink-soft (#5c665e) vs canvas (#f7f4ec) = ~5.3:1 -> texto normal.
+   - sem-green (#22a45d) vs sem-green-bg (#e3f3e9) = ~3.4:1 -> solo texto GRANDE o badge con peso 600+; sem-amber/sem-red mismo patrón.
+   - primary-deep (#166b3d) vs canvas (#f7f4ec) = ~7.9:1 -> texto/hover. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f4ec;
+  --foreground: #1e2620;
   --brand: #059669;
   --brand-dark: #047857;
   --brand-darker: #065f46;
@@ -19,6 +30,22 @@
   --brand-on-soft: #047857;
   --accent-soft: #fef9c3;
   --accent-dark: #854d0e;
+
+  --surface: #ffffff;
+  --surface-tint: #eff3ea;
+  --ink-soft: #5c665e;
+  --line: #e2dfd3;
+  --primary: #22a45d;
+  --primary-deep: #166b3d;
+  --accent-sun: #f2c94c;
+  --sem-green: #22a45d;
+  --sem-green-bg: #e3f3e9;
+  --sem-amber: #d9911f;
+  --sem-amber-bg: #fbf0d9;
+  --sem-red: #d14b3c;
+  --sem-red-bg: #f9e4e0;
+  --grad-hero-from: #dcefe2;
+  --grad-hero-to: #f7f4ec;
 }
 
 @theme inline {
@@ -31,20 +58,53 @@
   --color-brand-on-soft: var(--brand-on-soft);
   --color-accent-soft: var(--accent-soft);
   --color-accent-dark: var(--accent-dark);
+
+  --color-canvas: var(--background);
+  --color-ink: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-tint: var(--surface-tint);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-primary: var(--primary);
+  --color-primary-deep: var(--primary-deep);
+  --color-accent-sun: var(--accent-sun);
+  --color-sem-green: var(--sem-green);
+  --color-sem-green-bg: var(--sem-green-bg);
+  --color-sem-amber: var(--sem-amber);
+  --color-sem-amber-bg: var(--sem-amber-bg);
+  --color-sem-red: var(--sem-red);
+  --color-sem-red-bg: var(--sem-red-bg);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #14181a;
+    --foreground: #f4f1e8;
     --brand: #34d399;
     /* brand-dark/brand-darker se mantienen: son el relleno de botones (con texto blanco
        encima), su contraste depende de sí mismos, no del fondo de página. */
     --brand-soft: #052e1f;
     --brand-on-soft: #6ee7b7;
     /* accent-soft/accent-dark tampoco cambian: el chip lleva su propio fondo pálido siempre. */
+
+    --surface: #1c221d;
+    --surface-tint: #232b24;
+    --ink-soft: #a9b3a6;
+    --line: #2e362f;
+    --primary: #34d399;
+    --primary-deep: #4ade80;
+    --accent-sun: #f2c94c;
+    --sem-green: #4ade80;
+    --sem-green-bg: #123321;
+    --sem-amber: #f5a623;
+    --sem-amber-bg: #332405;
+    --sem-red: #f87171;
+    --sem-red-bg: #3b1512;
+    --grad-hero-from: #16241c;
+    --grad-hero-to: #14181a;
   }
 }
 
