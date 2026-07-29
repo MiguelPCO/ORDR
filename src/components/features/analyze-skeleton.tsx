@@ -37,13 +37,14 @@ export function AnalyzeSkeleton() {
           return (
             <li
               key={label}
+              aria-current={active ? "step" : undefined}
               className={`flex items-center gap-3 rounded-lg border border-line px-4 py-3 text-body-sm transition-colors ${
                 active ? "bg-surface-tint text-ink" : "text-ink-soft"
               }`}
             >
               <span
                 className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-caption font-semibold ${
-                  done ? "bg-primary text-white" : active ? "animate-pulse bg-primary/20 text-primary-deep" : "bg-line text-ink-soft"
+                  done ? "bg-primary text-on-primary" : active ? "animate-pulse bg-primary/20 text-primary-deep" : "bg-line text-ink-soft"
                 }`}
                 aria-hidden
               >
@@ -54,6 +55,7 @@ export function AnalyzeSkeleton() {
           );
         })}
       </ol>
+      <p className="text-body-sm text-ink-soft">Puede tardar hasta un minuto.</p>
     </main>
   );
 }

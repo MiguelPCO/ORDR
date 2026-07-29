@@ -41,6 +41,7 @@ export function AnalyzeHeroCard({ dishes }: { dishes: AnalyzeResponse["dishes"] 
           size={140}
           strokeWidth={12}
           progress={progress}
+          strokeLinecap="butt"
         />
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="font-display text-donut font-bold leading-none text-ink tabular-nums">

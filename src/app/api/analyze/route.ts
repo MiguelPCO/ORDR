@@ -93,8 +93,8 @@ export async function POST(request: NextRequest) {
       profileSnapshot.fatLimitG,
       profileSnapshot.carbLimitG
     );
-    const hardRed = dish.conflicts.length > 0 || limitReasons.length > 0;
     const conflicts = [...dish.conflicts, ...limitReasons];
+    const hardRed = conflicts.length > 0;
     const macrosForScoring = groundedMacros ?? dish.approx;
     const { verdict: engineVerdict, fitScore } = scoreDish(macrosForScoring, target, goal, hardRed);
 

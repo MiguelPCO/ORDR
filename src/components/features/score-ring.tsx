@@ -11,6 +11,7 @@ export function Ring({
   total,
   progress = 1,
   className,
+  strokeLinecap = "round",
 }: {
   segments: RingSegment[];
   size: number;
@@ -18,6 +19,7 @@ export function Ring({
   total?: number;
   progress?: number;
   className?: string;
+  strokeLinecap?: "round" | "butt";
 }) {
   const radius = size / 2 - strokeWidth / 2;
   const circumference = 2 * Math.PI * radius;
@@ -48,7 +50,7 @@ export function Ring({
             fill="none"
             stroke={seg.colorVar}
             strokeWidth={strokeWidth}
-            strokeLinecap="round"
+            strokeLinecap={strokeLinecap}
             strokeDasharray={circumference}
             strokeDashoffset={circumference * (1 - segFraction)}
             transform={`rotate(${polarRotation(startFraction)} ${size / 2} ${size / 2})`}

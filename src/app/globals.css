@@ -18,9 +18,20 @@
    Contraste verificado (WCAG AA):
    - ink (#1e2620) vs canvas (#f7f4ec) = ~15:1 -> texto normal.
    - ink-soft (#5c665e) vs canvas (#f7f4ec) = ~5.3:1 -> texto normal.
-   - sem-green (#22a45d) vs sem-green-bg (#e3f3e9) = ~3.4:1 -> solo texto GRANDE o badge con peso 600+; sem-amber/sem-red mismo patrón.
-   - primary-deep (#166b3d) vs canvas (#f7f4ec) = ~7.9:1 -> texto/hover. */
+   - primary-deep (#166b3d) vs canvas (#f7f4ec) = ~7.9:1 -> texto/hover.
+
+   Auditoria 2026-07-30 (fix wave, texto normal 12-14px => piso 4.5:1, no 3:1) — los sem-*
+   de abajo se oscurecieron en el mismo tono (mismo hue/sat, solo baja L) para pasar 4.5:1
+   reales contra su -bg; sem-red ademas se valido contra --surface blanco porque tambien se
+   usa asi (bullets de conflictos en dish-result-card):
+   - sem-green (#197a45) vs sem-green-bg (#e3f3e9) = 4.67:1 -> texto normal.
+   - sem-amber (#926115) vs sem-amber-bg (#fbf0d9) = 4.71:1 -> texto normal.
+   - sem-red (#b93a2c) vs sem-red-bg (#f9e4e0) = 4.64:1 -> texto normal.
+   - sem-red (#b93a2c) vs surface (#ffffff) = 5.67:1 -> texto normal (bullets de conflictos).
+   - on-primary (#052e1f) vs primary claro (#22a45d) = 4.61:1 -> texto normal.
+   - on-primary (#052e1f) vs primary oscuro (#34d399) = 7.71:1 -> texto normal. */
 :root {
+  color-scheme: light;
   --background: #f7f4ec;
   --foreground: #1e2620;
   --brand: #059669;
@@ -37,12 +48,13 @@
   --line: #e2dfd3;
   --primary: #22a45d;
   --primary-deep: #166b3d;
+  --on-primary: #052e1f;
   --accent-sun: #f2c94c;
-  --sem-green: #22a45d;
+  --sem-green: #197a45;
   --sem-green-bg: #e3f3e9;
-  --sem-amber: #d9911f;
+  --sem-amber: #926115;
   --sem-amber-bg: #fbf0d9;
-  --sem-red: #d14b3c;
+  --sem-red: #b93a2c;
   --sem-red-bg: #f9e4e0;
   --grad-hero-from: #dcefe2;
   --grad-hero-to: #f7f4ec;
@@ -67,6 +79,7 @@
   --color-line: var(--line);
   --color-primary: var(--primary);
   --color-primary-deep: var(--primary-deep);
+  --color-on-primary: var(--on-primary);
   --color-accent-sun: var(--accent-sun);
   --color-sem-green: var(--sem-green);
   --color-sem-green-bg: var(--sem-green-bg);
@@ -93,6 +106,7 @@
    duplicaría estos valores en dos sitios y uno se desincroniza con el tiempo. El toggle
    manual (theme-toggle.tsx) solo cambia el atributo + localStorage. */
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --background: #14181a;
   --foreground: #f4f1e8;
   --brand: #34d399;
@@ -101,6 +115,9 @@
   --brand-soft: #052e1f;
   --brand-on-soft: #6ee7b7;
   /* accent-soft/accent-dark tampoco cambian: el chip lleva su propio fondo pálido siempre. */
+  /* on-primary tampoco se redefine aquí a propósito: no cambia entre temas (#052e1f pasa
+     4.5:1 contra el --primary claro Y el oscuro), y como este bloque comparte elemento
+     (html) con :root, la variable no redefinida cae de vuelta a la de arriba. */
   --surface: #1c221d;
   --surface-tint: #232b24;
   --ink-soft: #a9b3a6;

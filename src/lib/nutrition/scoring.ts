@@ -50,22 +50,15 @@ export function normalizeVerdict(v: string): Verdict {
 }
 
 /**
- * Guardarraíl duro (PRD §9): alérgeno presente o conflicto de dieta → rojo siempre, antes de puntuar.
- * `conflicts` viene del LLM (única fuente posible para "¿qué hay en el plato?"); el chequeo de
- * carbos en keto es del lado del código porque ya tenemos macros fundados y numéricos.
- *
- * `fatLimitG`/`carbLimitG` son límites opcionales (gramos por comida) que el usuario puede fijar en su
- * perfil o ajustar por sesión; si `carbLimitG` no se especifica y la dieta es keto, se usa
- * `KETO_CARB_LIMIT_G` (20g) como default — mismo comportamiento que antes de que existieran estos params.
+ * Formatea gramos para el mensaje de `hardLimitReasons`: entero si es un valor entero, si no
+ * redondea HACIA ARRIBA a 1 decimal (no `Math.round`). Con `Math.round`, un exceso real pero
+ * diminuto (p.ej. 20.04g contra un límite de 20g, típico al sumar macros de ingredientes)
+ * redondearía a 20.0 y produciría "20g > 20g/comida" — el mismo bug que esto arregla, solo
+ * más difícil de ver. `Math.ceil` garantiza que si x > límite (entero), el valor impreso
+ * también sea > límite.
  */
-export function hasHardConflict(
-  conflicts: string[],
-  grounded: Macros | null,
-  diet: Diet,
-  fatLimitG: number | null = null,
-  carbLimitG: number | null = null
-): boolean {
-  return conflicts.length > 0 || hardLimitReasons(grounded, diet, fatLimitG, carbLimitG).length > 0;
+function formatGrams(x: number): number {
+  return Number.isInteger(x) ? x : Math.ceil(x * 10) / 10;
 }
 
 /**
@@ -85,11 +78,11 @@ export function hardLimitReasons(
   const effectiveCarbLimit = carbLimitG ?? (diet === "keto" ? KETO_CARB_LIMIT_G : null);
   if (effectiveCarbLimit !== null && grounded.carbs_g > effectiveCarbLimit) {
     reasons.push(
-      `Supera límite de carbohidratos (${Math.round(grounded.carbs_g)}g > ${effectiveCarbLimit}g/comida)`
+      `Supera límite de carbohidratos (${formatGrams(grounded.carbs_g)}g > ${effectiveCarbLimit}g/comida)`
     );
   }
   if (fatLimitG !== null && grounded.fat_g > fatLimitG) {
-    reasons.push(`Supera límite de grasa (${Math.round(grounded.fat_g)}g > ${fatLimitG}g/comida)`);
+    reasons.push(`Supera límite de grasa (${formatGrams(grounded.fat_g)}g > ${fatLimitG}g/comida)`);
   }
   return reasons;
 }

@@ -34,6 +34,22 @@ export function ThemeToggle() {
     setTheme(stored === "light" || stored === "dark" ? stored : getSystemTheme());
   }, []);
 
+  useEffect(() => {
+    // Solo seguimos el tema del SO en vivo si el usuario nunca eligió manualmente (sin
+    // valor en localStorage). Si ya hizo una elección explícita, un cambio de tema del SO
+    // no debe pisarla.
+    const mql = window.matchMedia("(prefers-color-scheme: dark)");
+    function handleChange(e: MediaQueryListEvent) {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored === "light" || stored === "dark") return;
+      const next: Theme = e.matches ? "dark" : "light";
+      setTheme(next);
+      document.documentElement.setAttribute("data-theme", next);
+    }
+    mql.addEventListener("change", handleChange);
+    return () => mql.removeEventListener("change", handleChange);
+  }, []);
+
   function toggle() {
     const next: Theme = (theme ?? getSystemTheme()) === "dark" ? "light" : "dark";
     setTheme(next);
@@ -45,7 +61,7 @@ export function ThemeToggle() {
     // El script inline de layout.tsx ya resolvió data-theme antes del paint, pero React
     // aún no lo leyó en este render — mostrar un hueco en vez de adivinar el ícono (evita
     // parpadeo de ícono/aria-label incorrecto en modo oscuro).
-    return <span className="inline-block h-[18px] w-[18px] p-1.5" aria-hidden />;
+    return <span className="inline-block h-[30px] w-[30px]" aria-hidden />;
   }
 
   return (
