@@ -116,6 +116,54 @@
   }
 }
 
+/* Toggle manual (theme-toggle.tsx): un atributo [data-theme] en <html> pesa más en
+   especificidad que el bloque @media de arriba, así que gana sin importar el OS. */
+:root[data-theme="dark"] {
+  --background: #14181a;
+  --foreground: #f4f1e8;
+  --brand: #34d399;
+  --brand-soft: #052e1f;
+  --brand-on-soft: #6ee7b7;
+  --surface: #1c221d;
+  --surface-tint: #232b24;
+  --ink-soft: #a9b3a6;
+  --line: #2e362f;
+  --primary: #34d399;
+  --primary-deep: #4ade80;
+  --accent-sun: #f2c94c;
+  --sem-green: #4ade80;
+  --sem-green-bg: #123321;
+  --sem-amber: #f5a623;
+  --sem-amber-bg: #332405;
+  --sem-red: #f87171;
+  --sem-red-bg: #3b1512;
+  --grad-hero-from: #16241c;
+  --grad-hero-to: #14181a;
+}
+
+:root[data-theme="light"] {
+  --background: #f7f4ec;
+  --foreground: #1e2620;
+  --brand: #059669;
+  --brand-soft: #ecfdf5;
+  --brand-on-soft: #047857;
+  --surface: #ffffff;
+  --surface-tint: #eff3ea;
+  --ink-soft: #5c665e;
+  --line: #e2dfd3;
+  --primary: #22a45d;
+  --primary-deep: #166b3d;
+  --accent-sun: #f2c94c;
+  --sem-green: #22a45d;
+  --sem-green-bg: #e3f3e9;
+  --sem-amber: #d9911f;
+  --sem-amber-bg: #fbf0d9;
+  --sem-red: #d14b3c;
+  --sem-red-bg: #f9e4e0;
+  --grad-hero-from: #dcefe2;
+  --grad-hero-to: #f7f4ec;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
