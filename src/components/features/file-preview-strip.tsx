@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { rotateImageFile } from "@/lib/image/rotate-image-file";
 
 export function FilePreviewStrip({
@@ -10,16 +10,21 @@ export function FilePreviewStrip({
   files: File[];
   onChange: (files: File[]) => void;
 }) {
-  const [urls, setUrls] = useState<string[]>([]);
   const [rotateError, setRotateError] = useState<string | null>(null);
 
+  // useMemo (no useEffect+state) para que urls[i] siempre corresponda a files[i] en el mismo
+  // render — con state async había un render donde files ya cambió de orden/longitud pero
+  // urls seguía siendo el del render anterior, colando un <img src=""> pasajero.
+  const urls = useMemo(
+    () => files.map((f) => (f.type === "application/pdf" ? null : URL.createObjectURL(f))),
+    [files]
+  );
+
   useEffect(() => {
-    const next = files.map((f) => (f.type === "application/pdf" ? "" : URL.createObjectURL(f)));
-    setUrls(next);
     return () => {
-      next.forEach((u) => u && URL.revokeObjectURL(u));
+      urls.forEach((u) => u && URL.revokeObjectURL(u));
     };
-  }, [files]);
+  }, [urls]);
 
   async function handleRotate(index: number) {
     try {
@@ -50,12 +55,14 @@ export function FilePreviewStrip({
               PDF
             </div>
           ) : (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={urls[i]}
-              alt=""
-              className="h-20 w-20 rounded-md border border-foreground/20 object-cover"
-            />
+            urls[i] && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={urls[i]}
+                alt=""
+                className="h-20 w-20 rounded-md border border-foreground/20 object-cover"
+              />
+            )
           )}
           <div className="mt-1 flex justify-center gap-1">
             {file.type !== "application/pdf" && (
