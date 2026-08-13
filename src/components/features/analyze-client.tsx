@@ -271,6 +271,7 @@ export function AnalyzeClient({
 
       <div className="space-y-2">
         <p className="text-sm font-medium">Foto(s) o PDF de la carta (1-4)</p>
+        <p className="text-xs text-foreground/60">Captura la carta completa, no solo lo visible en pantalla.</p>
 
         <input
           ref={cameraInputRef}

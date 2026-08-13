@@ -48,6 +48,10 @@ export function AnalyzeResults({
         </button>
       </div>
 
+      {result.menuReadOk && (
+        <p className="text-body-sm text-ink-soft">Estimado por porción estándar.</p>
+      )}
+
       {!result.menuReadOk && (
         <p className="rounded-md bg-sem-red-bg px-3 py-2 text-body-sm text-sem-red">
           No se pudo leer la carta. {result.notes}
