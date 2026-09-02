@@ -141,6 +141,20 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
+/* `color-scheme` por sí solo no basta en todos los navegadores/SOs para que el desplegable
+   nativo de <select> (las <option> abiertas) herede el tema — algunos siguen pintando el
+   popup con fondo claro del sistema pase lo que pase, dejando texto claro sobre fondo claro
+   en modo oscuro. Fijar fondo/color explícitos en cada <option> fuerza el contraste correcto
+   en ambos temas sin depender de esa heurística del navegador.
+   Ojo: NO se toca `select` en sí (solo `select option`) — cualquier regla sin `@layer` aquí
+   tiene más prioridad que las utilities de Tailwind (que sí van en layer) pase lo que pase
+   con la especificidad, así que un `select { background: ... }` aquí pisaría `bg-transparent`
+   en todos los <select> del proyecto y rompería el estilo minimalista de los inputs. */
+select option {
+  background-color: var(--surface);
+  color: var(--foreground);
+}
+
 :focus-visible {
   outline-color: var(--brand);
 }
