@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const AUTH_REQUIRED_PREFIXES = ["/profile", "/history"];
+const AUTH_REQUIRED_PREFIXES = ["/profile", "/history", "/log"];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
