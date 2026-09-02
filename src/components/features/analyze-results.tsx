@@ -20,6 +20,7 @@ export function AnalyzeResults({
   const containerRef = useRef<HTMLDivElement>(null);
   const [filter, setFilter] = useState<VerdictFilter>("all");
   const [dishes, setDishes] = useState(result.dishes);
+  const [pendingDishId, setPendingDishId] = useState<string | null>(null);
   const filteredDishes = filter === "all" ? dishes : dishes.filter((d) => d.verdict === filter);
 
   useGSAP(
@@ -38,6 +39,8 @@ export function AnalyzeResults({
   );
 
   async function handleToggleEaten(dishId: string) {
+    if (pendingDishId) return;
+    setPendingDishId(dishId);
     const previous = dishes;
     // Optimista: si ya había OTRO plato marcado en este análisis, lo desmarca en el
     // estado local también (el índice único parcial en DB solo permite uno).
@@ -54,6 +57,8 @@ export function AnalyzeResults({
       setDishes((prev) => prev.map((d) => (d.id === dishId ? { ...d, eatenAt: body.eatenAt } : d)));
     } catch {
       setDishes(previous);
+    } finally {
+      setPendingDishId(null);
     }
   }
 
@@ -101,6 +106,7 @@ export function AnalyzeResults({
               key={`${dish.name}-${dish.nutritionQuery}`}
               dish={dish}
               onToggleEaten={isAuthenticated ? handleToggleEaten : undefined}
+              disabled={pendingDishId !== null}
             />
           ))}
         </div>
