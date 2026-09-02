@@ -14,12 +14,13 @@ export type ProfileRow = {
   meals_per_day: number;
   protein_g_per_kg: number;
   manual_tdee: number | null;
+  body_fat_pct: number | null;
   fat_limit_g: number | null;
   carb_limit_g: number | null;
 };
 
 export const PROFILE_ROW_SELECT =
-  "display_name, sex, birth_date, height_cm, weight_kg, activity_level, diet, allergies, dislikes, goal, meals_per_day, protein_g_per_kg, manual_tdee, fat_limit_g, carb_limit_g";
+  "display_name, sex, birth_date, height_cm, weight_kg, activity_level, diet, allergies, dislikes, goal, meals_per_day, protein_g_per_kg, manual_tdee, body_fat_pct, fat_limit_g, carb_limit_g";
 
 export function rowToProfile(row: ProfileRow): Profile {
   return {
@@ -36,6 +37,7 @@ export function rowToProfile(row: ProfileRow): Profile {
     mealsPerDay: row.meals_per_day,
     proteinGPerKg: row.protein_g_per_kg,
     manualTdee: row.manual_tdee,
+    bodyFatPct: row.body_fat_pct,
     fatLimitG: row.fat_limit_g,
     carbLimitG: row.carb_limit_g,
   };

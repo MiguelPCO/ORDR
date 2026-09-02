@@ -24,8 +24,13 @@ function yearsSince(date: Date): number {
   return age;
 }
 
-// SCHEMA.md §6
+// SCHEMA.md §6 — Katch-McArdle (usa % grasa corporal, más preciso) cuando el usuario lo
+// aporta; si no, cae a Mifflin-St Jeor (requiere sexo/altura/edad, sin % grasa).
 export function bmr(p: Profile): number {
+  if (p.bodyFatPct !== null) {
+    const leanMassKg = p.weightKg * (1 - p.bodyFatPct / 100);
+    return 370 + 21.6 * leanMassKg;
+  }
   const age = yearsSince(p.birthDate);
   const s = p.sex === "male" ? 5 : -161;
   return 10 * p.weightKg + 6.25 * p.heightCm - 5 * age + s;

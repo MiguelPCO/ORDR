@@ -26,6 +26,7 @@ export const ProfileSchema = z.object({
   mealsPerDay: z.number().int().min(1).max(6).default(3),
   proteinGPerKg: z.number().min(1).max(3.5).default(2.0),
   manualTdee: z.number().int().positive().nullable().default(null),
+  bodyFatPct: z.number().min(3).max(60).nullable().default(null),
   fatLimitG: z.number().positive().nullable().default(null),
   carbLimitG: z.number().positive().nullable().default(null),
 });

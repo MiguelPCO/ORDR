@@ -32,6 +32,7 @@ export async function saveProfile(formData: FormData) {
     mealsPerDay: Number(formData.get("mealsPerDay")),
     proteinGPerKg: Number(formData.get("proteinGPerKg")),
     manualTdee: formData.get("manualTdee") ? Number(formData.get("manualTdee")) : null,
+    bodyFatPct: formData.get("bodyFatPct") ? Number(formData.get("bodyFatPct")) : null,
     fatLimitG: formData.get("fatLimitG") ? Number(formData.get("fatLimitG")) : null,
     carbLimitG: formData.get("carbLimitG") ? Number(formData.get("carbLimitG")) : null,
   });
@@ -56,6 +57,7 @@ export async function saveProfile(formData: FormData) {
     meals_per_day: p.mealsPerDay,
     protein_g_per_kg: p.proteinGPerKg,
     manual_tdee: p.manualTdee,
+    body_fat_pct: p.bodyFatPct,
     fat_limit_g: p.fatLimitG,
     carb_limit_g: p.carbLimitG,
     updated_at: new Date().toISOString(),

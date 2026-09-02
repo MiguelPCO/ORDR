@@ -17,6 +17,7 @@ function makeProfile(overrides: Partial<Profile> = {}): Profile {
     mealsPerDay: 3,
     proteinGPerKg: 2.0,
     manualTdee: null,
+    bodyFatPct: null,
     fatLimitG: null,
     carbLimitG: null,
     ...overrides,
@@ -34,6 +35,23 @@ describe("bmr", () => {
     const p = makeProfile({ sex: "female" });
     // 10*80 + 6.25*180 - 5*30 - 161 = 800 + 1125 - 150 - 161 = 1614
     expect(bmr(p)).toBe(1614);
+  });
+
+  it("usa Katch-McArdle cuando hay bodyFatPct, ignorando Mifflin-St Jeor", () => {
+    const p = makeProfile({ weightKg: 80, bodyFatPct: 15 });
+    // LBM = 80 * (1 - 15/100) = 68 ; BMR = 370 + 21.6*68 = 1838.8
+    expect(bmr(p)).toBeCloseTo(1838.8, 5);
+  });
+
+  it("Katch-McArdle no depende de sexo/altura/edad (solo peso y % grasa)", () => {
+    const p1 = makeProfile({ weightKg: 80, bodyFatPct: 15, sex: "female", heightCm: 200 });
+    const p2 = makeProfile({ weightKg: 80, bodyFatPct: 15, sex: "male", heightCm: 160 });
+    expect(bmr(p1)).toBeCloseTo(bmr(p2), 10);
+  });
+
+  it("bodyFatPct null (default) mantiene Mifflin-St Jeor sin cambios", () => {
+    const p = makeProfile({ bodyFatPct: null });
+    expect(bmr(p)).toBe(1780);
   });
 });
 

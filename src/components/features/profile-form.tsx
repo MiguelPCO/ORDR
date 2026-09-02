@@ -20,6 +20,7 @@ type FormValues = {
   mealsPerDay: number;
   proteinGPerKg: number;
   manualTdee: number | "";
+  bodyFatPct: number | "";
   fatLimitG: number | "";
   carbLimitG: number | "";
 };
@@ -40,6 +41,7 @@ function toDefault(profile: Profile | null): FormValues {
       mealsPerDay: 3,
       proteinGPerKg: 2.0,
       manualTdee: "",
+      bodyFatPct: "",
       fatLimitG: "",
       carbLimitG: "",
     };
@@ -58,6 +60,7 @@ function toDefault(profile: Profile | null): FormValues {
     mealsPerDay: profile.mealsPerDay,
     proteinGPerKg: profile.proteinGPerKg,
     manualTdee: profile.manualTdee ?? "",
+    bodyFatPct: profile.bodyFatPct ?? "",
     fatLimitG: profile.fatLimitG ?? "",
     carbLimitG: profile.carbLimitG ?? "",
   };
@@ -89,6 +92,7 @@ export function ProfileForm({
       allergies: values.allergies.split(",").map((a) => a.trim()).filter(Boolean),
       dislikes: values.dislikes.split(",").map((d) => d.trim()).filter(Boolean),
       manualTdee: values.manualTdee === "" ? null : Number(values.manualTdee),
+      bodyFatPct: values.bodyFatPct === "" ? null : Number(values.bodyFatPct),
       fatLimitG: values.fatLimitG === "" ? null : Number(values.fatLimitG),
       carbLimitG: values.carbLimitG === "" ? null : Number(values.carbLimitG),
     });
@@ -127,6 +131,7 @@ export function ProfileForm({
     fd.set("mealsPerDay", String(values.mealsPerDay));
     fd.set("proteinGPerKg", String(values.proteinGPerKg));
     if (values.manualTdee !== "") fd.set("manualTdee", String(values.manualTdee));
+    if (values.bodyFatPct !== "") fd.set("bodyFatPct", String(values.bodyFatPct));
     if (values.fatLimitG !== "") fd.set("fatLimitG", String(values.fatLimitG));
     if (values.carbLimitG !== "") fd.set("carbLimitG", String(values.carbLimitG));
     await saveProfile(fd);
@@ -306,6 +311,20 @@ export function ProfileForm({
             {...register("manualTdee")}
           />
         </div>
+      </div>
+
+      <div className="space-y-1">
+        <label htmlFor="bodyFatPct" className="text-sm font-medium">
+          % grasa corporal
+        </label>
+        <input
+          id="bodyFatPct"
+          type="number"
+          step="0.1"
+          placeholder="opcional, mejora precisión (Katch-McArdle)"
+          className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
+          {...register("bodyFatPct")}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
