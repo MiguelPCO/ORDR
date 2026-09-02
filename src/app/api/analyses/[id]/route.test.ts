@@ -102,6 +102,7 @@ describe("GET /api/analyses/[id]", () => {
               final_verdict: "green",
               fit_score: 80,
               eaten_at: null,
+              verdict_feedback: null,
             },
           ],
           error: null,

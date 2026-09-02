@@ -12,10 +12,11 @@ export type DishRow = {
   final_verdict: string;
   fit_score: number;
   eaten_at: string | null;
+  verdict_feedback: boolean | null;
 };
 
 export const DISH_ROW_SELECT =
-  "id, name, reason, nutrition_query, assumptions, conflicts, approx_macros, grounded_macros, final_verdict, fit_score, rank, eaten_at";
+  "id, name, reason, nutrition_query, assumptions, conflicts, approx_macros, grounded_macros, final_verdict, fit_score, rank, eaten_at, verdict_feedback";
 
 export function rowToDish(d: DishRow): AnalyzedDish {
   return {
@@ -30,5 +31,6 @@ export function rowToDish(d: DishRow): AnalyzedDish {
     verdict: d.final_verdict as AnalyzedDish["verdict"],
     fitScore: d.fit_score,
     eatenAt: d.eaten_at,
+    verdictFeedback: d.verdict_feedback,
   };
 }

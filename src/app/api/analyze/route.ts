@@ -143,6 +143,7 @@ export async function POST(request: NextRequest) {
         ...d,
         id: dishIds[i] ?? null,
         eatenAt: null,
+        verdictFeedback: null,
       })),
     })
   );

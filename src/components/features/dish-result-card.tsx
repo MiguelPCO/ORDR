@@ -50,10 +50,12 @@ function MacroChips({ m }: { m: { kcal: number; protein_g: number; carbs_g: numb
 export function DishResultCard({
   dish,
   onToggleEaten,
+  onFeedback,
   disabled,
 }: {
   dish: Dish;
   onToggleEaten?: (dishId: string) => void;
+  onFeedback?: (dishId: string, agree: boolean) => void;
   disabled?: boolean;
 }) {
   const style = VERDICT_STYLE[dish.verdict];
@@ -83,6 +85,32 @@ export function DishResultCard({
             <li key={c}>{c}</li>
           ))}
         </ul>
+      )}
+
+      {onFeedback && dish.id && (
+        <div className="mt-2 flex items-center gap-2 text-caption text-ink-soft">
+          <span>¿Acertamos con este veredicto?</span>
+          <button
+            type="button"
+            aria-label="Sí, acertó"
+            onClick={() => onFeedback(dish.id!, true)}
+            className={`rounded-full px-2 py-0.5 transition-colors ${
+              dish.verdictFeedback === true ? "bg-sem-green-bg text-sem-green" : "hover:bg-surface-tint"
+            }`}
+          >
+            👍
+          </button>
+          <button
+            type="button"
+            aria-label="No, no acertó"
+            onClick={() => onFeedback(dish.id!, false)}
+            className={`rounded-full px-2 py-0.5 transition-colors ${
+              dish.verdictFeedback === false ? "bg-sem-red-bg text-sem-red" : "hover:bg-surface-tint"
+            }`}
+          >
+            👎
+          </button>
+        </div>
       )}
 
       {onToggleEaten && dish.id && (

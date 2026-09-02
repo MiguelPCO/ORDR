@@ -101,6 +101,7 @@ export const AnalyzedDishSchema = z.object({
   verdict: Verdict,
   id: z.string().nullable(),
   eatenAt: z.string().nullable(),
+  verdictFeedback: z.boolean().nullable(),
   fitScore: z.number(),
 });
 export type AnalyzedDish = z.infer<typeof AnalyzedDishSchema>;

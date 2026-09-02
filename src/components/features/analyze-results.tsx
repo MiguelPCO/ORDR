@@ -62,6 +62,21 @@ export function AnalyzeResults({
     }
   }
 
+  async function handleFeedback(dishId: string, agree: boolean) {
+    const previous = dishes;
+    setDishes((prev) => prev.map((d) => (d.id === dishId ? { ...d, verdictFeedback: agree } : d)));
+    try {
+      const res = await fetch(`/api/dishes/${dishId}/feedback`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ agree }),
+      });
+      if (!res.ok) throw new Error("No se pudo guardar el feedback.");
+    } catch {
+      setDishes(previous);
+    }
+  }
+
   return (
     <main ref={containerRef} className="mx-auto w-full max-w-2xl space-y-4 px-4 py-10">
       <div className="flex items-center justify-between">
@@ -106,6 +121,7 @@ export function AnalyzeResults({
               key={dish.id ?? `${dish.name}-${dish.nutritionQuery}`}
               dish={dish}
               onToggleEaten={isAuthenticated ? handleToggleEaten : undefined}
+              onFeedback={isAuthenticated ? handleFeedback : undefined}
               disabled={pendingDishId !== null}
             />
           ))}
