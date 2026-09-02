@@ -35,8 +35,19 @@ function HistoryIcon({ className, active }: { className?: string; active?: boole
   );
 }
 
+function LogIcon({ className, active }: { className?: string; active?: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className={className}>
+      <rect x="4" y="4" width="16" height="16" rx="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8 9h8M8 13h5" strokeLinecap="round" strokeLinejoin="round" />
+      {active && <path d="M8 17l1.5 1.5L12 16" strokeLinecap="round" strokeLinejoin="round" />}
+    </svg>
+  );
+}
+
 const TABS: Array<{ href: string; label: string; Icon: typeof AnalyzeIcon }> = [
   { href: "/analyze", label: "Analizar", Icon: AnalyzeIcon },
+  { href: "/log", label: "Registro", Icon: LogIcon },
   { href: "/profile", label: "Perfil", Icon: ProfileIcon },
   { href: "/history", label: "Historial", Icon: HistoryIcon },
 ];
