@@ -98,6 +98,8 @@ export const AnalyzedDishSchema = z.object({
   approxMacros: MacrosSchema,
   groundedMacros: GroundedMacrosSchema.nullable(),
   verdict: Verdict,
+  id: z.string().nullable(),
+  eatenAt: z.string().nullable(),
   fitScore: z.number(),
 });
 export type AnalyzedDish = z.infer<typeof AnalyzedDishSchema>;
