@@ -25,6 +25,14 @@ type FormValues = {
   carbLimitG: number | "";
 };
 
+const ACTIVITY_HINTS: Record<Profile["activityLevel"], string> = {
+  sedentary: "Poco o ningún ejercicio, trabajo de oficina.",
+  light: "Ejercicio ligero 1-3 días/semana.",
+  moderate: "Ejercicio moderado 3-5 días/semana.",
+  active: "Ejercicio intenso 6-7 días/semana.",
+  very_active: "Ejercicio muy intenso a diario o trabajo físico.",
+};
+
 function toDefault(profile: Profile | null): FormValues {
   if (!profile) {
     return {
@@ -219,6 +227,7 @@ export function ProfileForm({
           <option value="active">Activa</option>
           <option value="very_active">Muy activa</option>
         </select>
+        <p className="text-xs text-foreground/60">{ACTIVITY_HINTS[watched.activityLevel]}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
