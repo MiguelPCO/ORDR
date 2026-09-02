@@ -74,6 +74,9 @@ export function DishResultCard({
       </div>
       <p className="mt-1 text-body-sm text-ink-soft">{dish.reason}</p>
       <MacroChips m={primaryMacros} />
+      {dish.assumptions && (
+        <p className="mt-1.5 text-caption italic text-ink-soft/80">Supuesto de ración: {dish.assumptions}</p>
+      )}
       {dish.conflicts.length > 0 && (
         <ul className="mt-2 list-disc pl-5 text-caption text-sem-red">
           {dish.conflicts.map((c) => (
@@ -100,7 +103,6 @@ export function DishResultCard({
       <details className="mt-3 text-body-sm">
         <summary className="cursor-pointer text-ink-soft">Detalle</summary>
         <div className="mt-2 space-y-1">
-          {dish.assumptions && <p className="text-caption text-ink-soft">Supuesto: {dish.assumptions}</p>}
           <MacroRow label="Estimado (LLM)" m={dish.approxMacros} />
           {dish.groundedMacros ? (
             <MacroRow label={`Fundado (confianza: ${dish.groundedMacros.confidence})`} m={dish.groundedMacros} />
