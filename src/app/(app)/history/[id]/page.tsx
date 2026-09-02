@@ -25,11 +25,15 @@ export default async function HistoryDetailPage({
 
   if (!analysis) notFound();
 
-  const { data: dishRows } = await supabase
+  const { data: dishRows, error: dishesError } = await supabase
     .from("dishes")
     .select(DISH_ROW_SELECT)
     .eq("analysis_id", id)
     .order("rank", { ascending: true });
+
+  if (dishesError) {
+    console.error("HistoryDetailPage: fallo al consultar dishes", dishesError);
+  }
 
   const dishes = (dishRows ?? []).map(rowToDish);
 

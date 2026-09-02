@@ -44,6 +44,7 @@ export default async function LogPage({
 
   const rangeStart = new Date();
   rangeStart.setDate(rangeStart.getDate() - RANGE_DAYS[range]);
+  rangeStart.setUTCHours(0, 0, 0, 0);
 
   const { data: dishRows } = await supabase
     .from("dishes")
@@ -53,7 +54,8 @@ export default async function LogPage({
 
   const loggedDishes: LoggedDish[] = (dishRows ?? []).map((row) => ({
     eatenAt: row.eaten_at as string,
-    macros: (row.grounded_macros ?? row.approx_macros) as LoggedDish["macros"],
+    macros: (row.grounded_macros ??
+      row.approx_macros ?? { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }) as LoggedDish["macros"],
   }));
 
   const days = aggregateByDay(loggedDishes);
@@ -104,10 +106,11 @@ export default async function LogPage({
         {days.map((day) => (
           <li key={day.date} className="rounded-lg border border-line bg-surface p-4 space-y-2">
             <p className="text-body-sm font-medium text-ink">
-              {new Date(`${day.date}T00:00:00`).toLocaleDateString("es-ES", {
+              {new Date(`${day.date}T00:00:00Z`).toLocaleDateString("es-ES", {
                 weekday: "long",
                 day: "2-digit",
                 month: "short",
+                timeZone: "UTC",
               })}
             </p>
             {dailyTargets ? (

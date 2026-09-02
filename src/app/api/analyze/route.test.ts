@@ -204,7 +204,7 @@ describe("POST /api/analyze — persistence (D1: anonymous never writes rows)", 
     };
     const dishesTable = {
       insert: vi.fn().mockReturnValue({
-        select: vi.fn().mockResolvedValue({ data: [{ id: "dish-1" }], error: null }),
+        select: vi.fn().mockResolvedValue({ data: [{ id: "dish-1", rank: 0 }], error: null }),
       }),
     };
     const from = vi.fn((table: string) => (table === "analyses" ? analysesTable : dishesTable));
@@ -232,7 +232,7 @@ describe("POST /api/analyze — persistence (D1: anonymous never writes rows)", 
     };
     const dishesTable = {
       insert: vi.fn().mockReturnValue({
-        select: vi.fn().mockResolvedValue({ data: [{ id: "dish-1" }], error: null }),
+        select: vi.fn().mockResolvedValue({ data: [{ id: "dish-1", rank: 0 }], error: null }),
       }),
     };
     const from = vi.fn((table: string) => (table === "analyses" ? analysesTable : dishesTable));
@@ -245,6 +245,49 @@ describe("POST /api/analyze — persistence (D1: anonymous never writes rows)", 
     const body = await res.json();
     expect(body.dishes[0].id).toBe("dish-1");
     expect(body.dishes[0].eatenAt).toBeNull();
+  });
+
+  it("mapea el id de cada dish por su `rank` devuelto, no por el orden de las filas del insert (Important #2)", async () => {
+    mockedReadMenu.mockResolvedValue({
+      menu_read_ok: true,
+      dishes: [llmDish({ name: "Plato 1" }), llmDish({ name: "Plato 2" })],
+      notes: undefined,
+    });
+    mockedGroundMacrosBatch.mockResolvedValue([null, null]);
+
+    const analysesTable = {
+      insert: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: { id: "analysis-123" }, error: null }),
+        }),
+      }),
+    };
+    const dishesTable = {
+      insert: vi.fn().mockReturnValue({
+        // El orden de retorno de PostgREST no está garantizado — devolvemos las filas
+        // deliberadamente en orden INVERSO al de inserción (rank 1 antes que rank 0).
+        select: vi.fn().mockResolvedValue({
+          data: [
+            { id: "dish-2", rank: 1 },
+            { id: "dish-1", rank: 0 },
+          ],
+          error: null,
+        }),
+      }),
+    };
+    const from = vi.fn((table: string) => (table === "analyses" ? analysesTable : dishesTable));
+    mockedCreateClient.mockResolvedValue({
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "user-1" } } }) },
+      from,
+    } as unknown as Awaited<ReturnType<typeof createClient>>);
+
+    const res = await POST(buildRequest([jpegFile()]));
+    const body = await res.json();
+
+    const plato1 = body.dishes.find((d: { name: string }) => d.name === "Plato 1");
+    const plato2 = body.dishes.find((d: { name: string }) => d.name === "Plato 2");
+    expect(plato1.id).toBe("dish-1");
+    expect(plato2.id).toBe("dish-2");
   });
 
   it("anónimo: cada dish lleva id null (nunca se insertó nada)", async () => {

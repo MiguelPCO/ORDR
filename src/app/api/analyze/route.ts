@@ -168,7 +168,7 @@ async function persistIfAuthenticated(input: {
   files: File[];
   notes: string | undefined;
   dishes: ScoredDish[];
-}): Promise<{ analysisId: string | null; dishIds: string[] }> {
+}): Promise<{ analysisId: string | null; dishIds: (string | null)[] }> {
   try {
     const supabase = await createClient();
     const {
@@ -211,11 +211,19 @@ async function persistIfAuthenticated(input: {
           rank: i,
         }))
       )
-      .select("id");
+      .select("id, rank");
 
     if (dishesError || !insertedDishes) return { analysisId: null, dishIds: [] };
 
-    return { analysisId: analysis.id as string, dishIds: insertedDishes.map((r) => r.id as string) };
+    // PostgREST no garantiza que INSERT...RETURNING conserve el orden de inserción para un
+    // insert multi-fila — indexamos por el `rank` devuelto en vez de por posición del array,
+    // así el mapeo es correcto sin importar en qué orden vuelvan las filas.
+    const dishIds: (string | null)[] = new Array(input.dishes.length).fill(null);
+    for (const row of insertedDishes) {
+      dishIds[row.rank as number] = row.id as string;
+    }
+
+    return { analysisId: analysis.id as string, dishIds };
   } catch {
     // Fallo de persistencia no debe tirar el resultado ya calculado del pipeline.
     return { analysisId: null, dishIds: [] };

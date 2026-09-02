@@ -35,6 +35,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     .order("rank", { ascending: true });
 
   if (dishesError) {
+    console.error("GET /api/analyses/[id]: fallo al consultar dishes", dishesError);
     return NextResponse.json({ error: dishesError.message }, { status: 500 });
   }
 

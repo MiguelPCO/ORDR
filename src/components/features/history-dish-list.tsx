@@ -27,7 +27,7 @@ export function HistoryDishList({ initialDishes }: { initialDishes: AnalyzedDish
     <div className="space-y-3">
       {dishes.map((dish) => (
         <DishResultCard
-          key={`${dish.name}-${dish.nutritionQuery}`}
+          key={dish.id ?? `${dish.name}-${dish.nutritionQuery}`}
           dish={dish}
           onToggleEaten={dish.eatenAt ? handleToggleEaten : undefined}
           disabled={pendingDishId !== null}

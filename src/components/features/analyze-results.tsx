@@ -103,7 +103,7 @@ export function AnalyzeResults({
         <div className="space-y-3">
           {filteredDishes.map((dish) => (
             <DishResultCard
-              key={`${dish.name}-${dish.nutritionQuery}`}
+              key={dish.id ?? `${dish.name}-${dish.nutritionQuery}`}
               dish={dish}
               onToggleEaten={isAuthenticated ? handleToggleEaten : undefined}
               disabled={pendingDishId !== null}
