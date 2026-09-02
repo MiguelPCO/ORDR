@@ -6,11 +6,13 @@ import { ProfileForm } from "@/components/features/profile-form";
 import { AnalyzeResults } from "@/components/features/analyze-results";
 import { AnalyzeSkeleton } from "@/components/features/analyze-skeleton";
 import { FilePreviewStrip } from "@/components/features/file-preview-strip";
+import { compressImageIfNeeded } from "@/lib/image/compress-image";
 import { targets } from "@/lib/nutrition/targets";
 import type { Profile, Goal, AnalyzeResponse } from "@/schemas";
 
 const MAX_FILES = 4;
 const ACCEPTED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
+const MAX_PDF_BYTES = 32 * 1024 * 1024; // R6 (PRD.md) — límite de Claude Vision para PDF, validado Sprint 2
 
 const GOAL_LABEL: Record<Goal, string> = {
   cut: "Definición",
@@ -37,6 +39,7 @@ export function AnalyzeClient({
   const [sessionFatLimitG, setSessionFatLimitG] = useState<number | "">("");
   const [sessionCarbLimitG, setSessionCarbLimitG] = useState<number | "">("");
   const [files, setFiles] = useState<File[]>([]);
+  const [isPreparingFiles, setIsPreparingFiles] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -78,10 +81,15 @@ export function AnalyzeClient({
       setErrorMsg(`Tipo no soportado: ${invalid.type || invalid.name}`);
       return false;
     }
+    const oversizedPdf = newFiles.find((f) => f.type === "application/pdf" && f.size > MAX_PDF_BYTES);
+    if (oversizedPdf) {
+      setErrorMsg(`"${oversizedPdf.name}" supera el límite de 32MB para PDF.`);
+      return false;
+    }
     return true;
   }
 
-  function addFiles(incoming: File[]) {
+  async function addFiles(incoming: File[]) {
     if (!validateTypes(incoming)) return;
     // Descarta duplicados por identidad (mismo archivo elegido dos veces): evita
     // enviar la misma imagen dos veces al análisis y evita colisiones de key en
@@ -97,18 +105,31 @@ export function AnalyzeClient({
     } else {
       setErrorMsg(null);
     }
-    setFiles((prev) => [...prev, ...fresh].slice(0, MAX_FILES));
+    const toAdd = fresh.slice(0, room);
+
+    setIsPreparingFiles(true);
+    try {
+      // R6 — recomprime imágenes grandes client-side antes de subir (PDF no se toca, límite propio arriba).
+      const prepared = await Promise.all(
+        toAdd.map((f) => (f.type === "application/pdf" ? f : compressImageIfNeeded(f)))
+      );
+      setFiles((prev) => [...prev, ...prepared].slice(0, MAX_FILES));
+    } catch (e) {
+      setErrorMsg((e as Error).message);
+    } finally {
+      setIsPreparingFiles(false);
+    }
   }
 
   function handleCameraCapture(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return;
-    addFiles(Array.from(fileList));
+    void addFiles(Array.from(fileList));
     if (cameraInputRef.current) cameraInputRef.current.value = "";
   }
 
   function handleGallerySelect(fileList: FileList | null) {
     if (!fileList) return;
-    addFiles(Array.from(fileList));
+    void addFiles(Array.from(fileList));
     if (galleryInputRef.current) galleryInputRef.current.value = "";
   }
 
@@ -293,19 +314,25 @@ export function AnalyzeClient({
         <div className="flex gap-2">
           <button
             type="button"
+            disabled={isPreparingFiles}
             onClick={() => cameraInputRef.current?.click()}
-            className="flex-1 rounded-md border border-brand-dark/50 px-3 py-2 text-sm font-medium text-brand-dark transition-colors hover:bg-brand-soft"
+            className="flex-1 rounded-md border border-brand-dark/50 px-3 py-2 text-sm font-medium text-brand-dark transition-colors hover:bg-brand-soft disabled:opacity-50"
           >
             Hacer foto
           </button>
           <button
             type="button"
+            disabled={isPreparingFiles}
             onClick={() => galleryInputRef.current?.click()}
-            className="flex-1 rounded-md border border-foreground/20 px-3 py-2 text-sm font-medium transition-colors hover:bg-foreground/5"
+            className="flex-1 rounded-md border border-foreground/20 px-3 py-2 text-sm font-medium transition-colors hover:bg-foreground/5 disabled:opacity-50"
           >
             Elegir archivos
           </button>
         </div>
+
+        {isPreparingFiles && (
+          <p className="text-xs text-foreground/60">Preparando imagen(es)…</p>
+        )}
 
         <FilePreviewStrip files={files} onChange={setFiles} />
       </div>
@@ -319,7 +346,7 @@ export function AnalyzeClient({
       <button
         type="button"
         onClick={handleSubmit}
-        disabled={files.length === 0}
+        disabled={files.length === 0 || isPreparingFiles}
         className="w-full rounded-md bg-brand-dark px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-darker disabled:opacity-50"
       >
         Analizar carta
