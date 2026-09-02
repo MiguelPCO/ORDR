@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { DISH_ROW_SELECT, rowToDish } from "@/lib/supabase/dish-row";
-import { DishResultCard } from "@/components/features/dish-result-card";
+import { HistoryDishList } from "@/components/features/history-dish-list";
 
 export default async function HistoryDetailPage({
   params,
@@ -25,11 +25,15 @@ export default async function HistoryDetailPage({
 
   if (!analysis) notFound();
 
-  const { data: dishRows } = await supabase
+  const { data: dishRows, error: dishesError } = await supabase
     .from("dishes")
     .select(DISH_ROW_SELECT)
     .eq("analysis_id", id)
     .order("rank", { ascending: true });
+
+  if (dishesError) {
+    console.error("HistoryDetailPage: fallo al consultar dishes", dishesError);
+  }
 
   const dishes = (dishRows ?? []).map(rowToDish);
 
@@ -49,11 +53,7 @@ export default async function HistoryDetailPage({
         </Link>
       </div>
       {analysis.notes && <p className="text-sm text-foreground/60">{analysis.notes}</p>}
-      <div className="space-y-3">
-        {dishes.map((dish) => (
-          <DishResultCard key={`${dish.name}-${dish.nutritionQuery}`} dish={dish} />
-        ))}
-      </div>
+      <HistoryDishList initialDishes={dishes} />
     </main>
   );
 }

@@ -192,6 +192,7 @@ export function AnalyzeClient({
     return (
       <AnalyzeResults
         result={result}
+        isAuthenticated={isAuthenticated}
         onReset={() => {
           setResult(null);
           setFiles([]);

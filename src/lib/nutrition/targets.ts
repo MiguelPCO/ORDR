@@ -37,6 +37,8 @@ export function targets(p: Profile) {
   const dailyProtein = Math.round(p.weightKg * p.proteinGPerKg);
   return {
     tdee,
+    dailyKcal,
+    dailyProtein,
     mealKcal: Math.round(dailyKcal / p.mealsPerDay),
     mealProtein: Math.round(dailyProtein / p.mealsPerDay),
   };

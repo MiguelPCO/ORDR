@@ -11,14 +11,17 @@ import type { AnalyzeResponse } from "@/schemas";
 export function AnalyzeResults({
   result,
   onReset,
+  isAuthenticated,
 }: {
   result: AnalyzeResponse;
   onReset: () => void;
+  isAuthenticated: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [filter, setFilter] = useState<VerdictFilter>("all");
-  const filteredDishes =
-    filter === "all" ? result.dishes : result.dishes.filter((d) => d.verdict === filter);
+  const [dishes, setDishes] = useState(result.dishes);
+  const [pendingDishId, setPendingDishId] = useState<string | null>(null);
+  const filteredDishes = filter === "all" ? dishes : dishes.filter((d) => d.verdict === filter);
 
   useGSAP(
     () => {
@@ -34,6 +37,30 @@ export function AnalyzeResults({
     },
     { scope: containerRef, dependencies: [result, filter] }
   );
+
+  async function handleToggleEaten(dishId: string) {
+    if (pendingDishId) return;
+    setPendingDishId(dishId);
+    const previous = dishes;
+    // Optimista: si ya había OTRO plato marcado en este análisis, lo desmarca en el
+    // estado local también (el índice único parcial en DB solo permite uno).
+    setDishes((prev) =>
+      prev.map((d) => {
+        if (d.id === dishId) return { ...d, eatenAt: d.eatenAt ? null : new Date().toISOString() };
+        return d.eatenAt && d.id !== dishId ? { ...d, eatenAt: null } : d;
+      })
+    );
+    try {
+      const res = await fetch(`/api/dishes/${dishId}`, { method: "PATCH" });
+      if (!res.ok) throw new Error("No se pudo actualizar.");
+      const body = await res.json();
+      setDishes((prev) => prev.map((d) => (d.id === dishId ? { ...d, eatenAt: body.eatenAt } : d)));
+    } catch {
+      setDishes(previous);
+    } finally {
+      setPendingDishId(null);
+    }
+  }
 
   return (
     <main ref={containerRef} className="mx-auto w-full max-w-2xl space-y-4 px-4 py-10">
@@ -58,8 +85,8 @@ export function AnalyzeResults({
         </p>
       )}
 
-      <AnalyzeHeroCard dishes={result.dishes} />
-      <VerdictFilterChips dishes={result.dishes} value={filter} onChange={setFilter} />
+      <AnalyzeHeroCard dishes={dishes} />
+      <VerdictFilterChips dishes={dishes} value={filter} onChange={setFilter} />
 
       {result.menuReadOk && result.notes && (
         <details className="rounded-md border border-line px-3 py-2 text-body-sm">
@@ -75,7 +102,12 @@ export function AnalyzeResults({
       ) : (
         <div className="space-y-3">
           {filteredDishes.map((dish) => (
-            <DishResultCard key={`${dish.name}-${dish.nutritionQuery}`} dish={dish} />
+            <DishResultCard
+              key={dish.id ?? `${dish.name}-${dish.nutritionQuery}`}
+              dish={dish}
+              onToggleEaten={isAuthenticated ? handleToggleEaten : undefined}
+              disabled={pendingDishId !== null}
+            />
           ))}
         </div>
       )}

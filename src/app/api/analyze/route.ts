@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
     return rankDiff !== 0 ? rankDiff : b.fitScore - a.fitScore;
   });
 
-  const analysisId = await persistIfAuthenticated({
+  const { analysisId, dishIds } = await persistIfAuthenticated({
     goal,
     profileSnapshot,
     files,
@@ -139,7 +139,11 @@ export async function POST(request: NextRequest) {
       analysisId,
       menuReadOk: true,
       notes: llmResult.notes,
-      dishes: scoredDishes,
+      dishes: scoredDishes.map((d, i) => ({
+        ...d,
+        id: dishIds[i] ?? null,
+        eatenAt: null,
+      })),
     })
   );
 }
@@ -164,13 +168,13 @@ async function persistIfAuthenticated(input: {
   files: File[];
   notes: string | undefined;
   dishes: ScoredDish[];
-}): Promise<string | null> {
+}): Promise<{ analysisId: string | null; dishIds: (string | null)[] }> {
   try {
     const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return null;
+    if (!user) return { analysisId: null, dishIds: [] };
 
     const sourceType = input.files.some((f) => f.type === "application/pdf") ? "pdf" : "image";
 
@@ -187,30 +191,41 @@ async function persistIfAuthenticated(input: {
       .select("id")
       .single();
 
-    if (analysisError || !analysis) return null;
+    if (analysisError || !analysis) return { analysisId: null, dishIds: [] };
 
-    const { error: dishesError } = await supabase.from("dishes").insert(
-      input.dishes.map((d, i) => ({
-        analysis_id: analysis.id,
-        name: d.name,
-        reason: d.reason,
-        nutrition_query: d.nutritionQuery,
-        assumptions: d.assumptions,
-        conflicts: d.conflicts,
-        approx_macros: d.approxMacros,
-        grounded_macros: d.groundedMacros,
-        llm_draft_verdict: d.llmDraftVerdict,
-        final_verdict: d.verdict,
-        fit_score: d.fitScore,
-        rank: i,
-      }))
-    );
+    const { data: insertedDishes, error: dishesError } = await supabase
+      .from("dishes")
+      .insert(
+        input.dishes.map((d, i) => ({
+          analysis_id: analysis.id,
+          name: d.name,
+          reason: d.reason,
+          nutrition_query: d.nutritionQuery,
+          assumptions: d.assumptions,
+          conflicts: d.conflicts,
+          approx_macros: d.approxMacros,
+          grounded_macros: d.groundedMacros,
+          llm_draft_verdict: d.llmDraftVerdict,
+          final_verdict: d.verdict,
+          fit_score: d.fitScore,
+          rank: i,
+        }))
+      )
+      .select("id, rank");
 
-    if (dishesError) return null;
+    if (dishesError || !insertedDishes) return { analysisId: null, dishIds: [] };
 
-    return analysis.id as string;
+    // PostgREST no garantiza que INSERT...RETURNING conserve el orden de inserción para un
+    // insert multi-fila — indexamos por el `rank` devuelto en vez de por posición del array,
+    // así el mapeo es correcto sin importar en qué orden vuelvan las filas.
+    const dishIds: (string | null)[] = new Array(input.dishes.length).fill(null);
+    for (const row of insertedDishes) {
+      dishIds[row.rank as number] = row.id as string;
+    }
+
+    return { analysisId: analysis.id as string, dishIds };
   } catch {
     // Fallo de persistencia no debe tirar el resultado ya calculado del pipeline.
-    return null;
+    return { analysisId: null, dishIds: [] };
   }
 }

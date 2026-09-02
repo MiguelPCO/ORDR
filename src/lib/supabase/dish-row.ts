@@ -1,6 +1,7 @@
 import type { AnalyzedDish } from "@/schemas";
 
 export type DishRow = {
+  id: string;
   name: string;
   reason: string | null;
   nutrition_query: string;
@@ -10,13 +11,15 @@ export type DishRow = {
   grounded_macros: unknown;
   final_verdict: string;
   fit_score: number;
+  eaten_at: string | null;
 };
 
 export const DISH_ROW_SELECT =
-  "name, reason, nutrition_query, assumptions, conflicts, approx_macros, grounded_macros, final_verdict, fit_score, rank";
+  "id, name, reason, nutrition_query, assumptions, conflicts, approx_macros, grounded_macros, final_verdict, fit_score, rank, eaten_at";
 
 export function rowToDish(d: DishRow): AnalyzedDish {
   return {
+    id: d.id,
     name: d.name,
     reason: d.reason ?? "",
     nutritionQuery: d.nutrition_query,
@@ -26,5 +29,6 @@ export function rowToDish(d: DishRow): AnalyzedDish {
     groundedMacros: d.grounded_macros as AnalyzedDish["groundedMacros"],
     verdict: d.final_verdict as AnalyzedDish["verdict"],
     fitScore: d.fit_score,
+    eatenAt: d.eaten_at,
   };
 }

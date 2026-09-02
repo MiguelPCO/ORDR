@@ -73,4 +73,18 @@ describe("targets", () => {
     const t = targets(p);
     expect(t.mealProtein).toBe(Math.round((80 * 2.0) / 4));
   });
+
+  it("expone dailyKcal consistente con mealKcal * mealsPerDay (redondeo aparte)", () => {
+    const p = makeProfile({ manualTdee: 2000, goal: "cut", mealsPerDay: 4 });
+    const t = targets(p);
+    expect(t.dailyKcal).toBe(Math.round(2000 * 0.8));
+    expect(t.mealKcal).toBe(Math.round(t.dailyKcal / 4));
+  });
+
+  it("expone dailyProtein consistente con mealProtein * mealsPerDay (redondeo aparte)", () => {
+    const p = makeProfile({ weightKg: 80, proteinGPerKg: 2.0, mealsPerDay: 4 });
+    const t = targets(p);
+    expect(t.dailyProtein).toBe(Math.round(80 * 2.0));
+    expect(t.mealProtein).toBe(Math.round(t.dailyProtein / 4));
+  });
 });
