@@ -47,9 +47,16 @@ function MacroChips({ m }: { m: { kcal: number; protein_g: number; carbs_g: numb
   );
 }
 
-export function DishResultCard({ dish }: { dish: Dish }) {
+export function DishResultCard({
+  dish,
+  onToggleEaten,
+}: {
+  dish: Dish;
+  onToggleEaten?: (dishId: string) => void;
+}) {
   const style = VERDICT_STYLE[dish.verdict];
   const primaryMacros = dish.groundedMacros ?? dish.approxMacros;
+  const isEaten = dish.eatenAt !== null;
 
   return (
     <div className="dish-card relative overflow-hidden rounded-lg border border-line bg-surface p-4 pl-5">
@@ -71,6 +78,20 @@ export function DishResultCard({ dish }: { dish: Dish }) {
             <li key={c}>{c}</li>
           ))}
         </ul>
+      )}
+
+      {onToggleEaten && dish.id && (
+        <button
+          type="button"
+          onClick={() => onToggleEaten(dish.id!)}
+          className={`mt-3 w-full rounded-md px-3 py-2 text-body-sm font-medium transition-colors ${
+            isEaten
+              ? "bg-sem-green-bg text-sem-green"
+              : "border border-brand-dark/50 text-brand-dark hover:bg-brand-soft"
+          }`}
+        >
+          {isEaten ? "Comido ✓" : "Comí esto"}
+        </button>
       )}
 
       <details className="mt-3 text-body-sm">
