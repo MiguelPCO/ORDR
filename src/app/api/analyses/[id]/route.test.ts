@@ -91,6 +91,7 @@ describe("GET /api/analyses/[id]", () => {
         {
           data: [
             {
+              id: "dish-1",
               name: "Pollo",
               reason: "Alta proteína",
               nutrition_query: "150g grilled chicken breast",
@@ -100,6 +101,7 @@ describe("GET /api/analyses/[id]", () => {
               grounded_macros: null,
               final_verdict: "green",
               fit_score: 80,
+              eaten_at: null,
             },
           ],
           error: null,
