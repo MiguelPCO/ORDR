@@ -4,12 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_TABS } from "@/components/features/nav-tabs";
 
-export function BottomTabBar() {
+export function DesktopNav() {
   const pathname = usePathname();
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-10 flex border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="hidden items-center gap-0.5 rounded-full bg-surface-tint p-1 md:flex"
       aria-label="Navegación principal"
     >
       {NAV_TABS.map(({ href, label, Icon }) => {
@@ -19,11 +19,11 @@ export function BottomTabBar() {
             key={href}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-caption transition-colors ${
-              active ? "font-semibold text-primary-deep" : "font-medium text-ink-soft"
+            className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-body-sm font-semibold transition-colors ${
+              active ? "bg-primary-deep text-white" : "text-ink-soft hover:text-ink"
             }`}
           >
-            <Icon className="h-5 w-5" active={active} />
+            <Icon className="h-4 w-4" active={active} />
             {label}
           </Link>
         );
