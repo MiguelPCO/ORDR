@@ -1,11 +1,13 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { useSessionStore, readAnonymousProfile } from "@/stores/session-store";
 import { ProfileForm } from "@/components/features/profile-form";
 import { AnalyzeResults } from "@/components/features/analyze-results";
 import { AnalyzeSkeleton } from "@/components/features/analyze-skeleton";
-import { FilePreviewStrip } from "@/components/features/file-preview-strip";
+import { AnalyzeSessionFilters } from "@/components/features/analyze-session-filters";
+import { AnalyzeFileUpload } from "@/components/features/analyze-file-upload";
 import { compressImageIfNeeded } from "@/lib/image/compress-image";
 import { targets } from "@/lib/nutrition/targets";
 import type { Profile, Goal, AnalyzeResponse } from "@/schemas";
@@ -43,17 +45,16 @@ export function AnalyzeClient({
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const isSubmittingRef = useRef(false);
 
   if (isAuthenticated && !profile) {
     return (
       <main className="mx-auto max-w-lg px-4 py-16 text-center">
         <p className="text-foreground/70">
           Completa tu perfil antes de analizar una carta —{" "}
-          <a href="/profile" className="underline">
+          <Link href="/profile" className="underline">
             ir a Perfil
-          </a>
+          </Link>
           .
         </p>
       </main>
@@ -121,23 +122,17 @@ export function AnalyzeClient({
     }
   }
 
-  function handleCameraCapture(fileList: FileList | null) {
-    if (!fileList || fileList.length === 0) return;
-    void addFiles(Array.from(fileList));
-    if (cameraInputRef.current) cameraInputRef.current.value = "";
-  }
-
-  function handleGallerySelect(fileList: FileList | null) {
-    if (!fileList) return;
-    void addFiles(Array.from(fileList));
-    if (galleryInputRef.current) galleryInputRef.current.value = "";
-  }
-
   async function handleSubmit() {
+    // Guarda contra doble-click/doble-Enter con un ref (no state: el estado no se
+    // actualiza sincrónicamente, así que dos invocaciones en el mismo tick verían el
+    // mismo `status` "idle" y ambas dispararían POST /api/analyze — llamada cara a
+    // Claude vision + API Ninjas por cada una).
+    if (isSubmittingRef.current) return;
     if (files.length < 1) {
       setErrorMsg("Sube al menos 1 imagen o PDF de la carta.");
       return;
     }
+    isSubmittingRef.current = true;
     setStatus("loading");
     setErrorMsg(null);
 
@@ -181,6 +176,8 @@ export function AnalyzeClient({
     } catch {
       setErrorMsg("No se pudo conectar con el servidor.");
       setStatus("error");
+    } finally {
+      isSubmittingRef.current = false;
     }
   }
 
@@ -207,9 +204,9 @@ export function AnalyzeClient({
       {!isAuthenticated && (
         <div className="flex items-center justify-between rounded-full bg-accent-soft px-3 py-1.5 text-xs font-medium text-accent-dark">
           <span>Modo invitado — este análisis no se guarda</span>
-          <a href="/signup" className="underline underline-offset-2">
+          <Link href="/signup" className="underline underline-offset-2">
             Crear cuenta
-          </a>
+          </Link>
         </div>
       )}
 
@@ -231,112 +228,25 @@ export function AnalyzeClient({
         </select>
       </div>
 
-      <details className="rounded-md border border-foreground/20 px-3 py-2">
-        <summary className="cursor-pointer text-sm font-medium">Más filtros</summary>
-        <div className="mt-3 space-y-3">
-          <div className="space-y-1">
-            <label htmlFor="sessionAllergiesExtra" className="text-sm font-medium">
-              Alergias extra para esta carta
-            </label>
-            <input
-              id="sessionAllergiesExtra"
-              value={sessionAllergiesExtra}
-              onChange={(e) => setSessionAllergiesExtra(e.target.value)}
-              className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
-            />
-          </div>
-          <div className="space-y-1">
-            <label htmlFor="sessionDislikesExtra" className="text-sm font-medium">
-              No me gusta extra para esta carta
-            </label>
-            <input
-              id="sessionDislikesExtra"
-              value={sessionDislikesExtra}
-              onChange={(e) => setSessionDislikesExtra(e.target.value)}
-              className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label htmlFor="sessionFatLimitG" className="text-sm font-medium">
-                Límite grasa (g)
-              </label>
-              <input
-                id="sessionFatLimitG"
-                type="number"
-                placeholder={profile.fatLimitG != null ? `perfil: ${profile.fatLimitG} g` : "sin límite"}
-                value={sessionFatLimitG}
-                onChange={(e) =>
-                  setSessionFatLimitG(e.target.value === "" ? "" : Number(e.target.value))
-                }
-                className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="sessionCarbLimitG" className="text-sm font-medium">
-                Límite carbos (g)
-              </label>
-              <input
-                id="sessionCarbLimitG"
-                type="number"
-                placeholder={profile.carbLimitG != null ? `perfil: ${profile.carbLimitG} g` : "sin límite"}
-                value={sessionCarbLimitG}
-                onChange={(e) =>
-                  setSessionCarbLimitG(e.target.value === "" ? "" : Number(e.target.value))
-                }
-                className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
-              />
-            </div>
-          </div>
-        </div>
-      </details>
+      <AnalyzeSessionFilters
+        allergiesExtra={sessionAllergiesExtra}
+        onAllergiesExtraChange={setSessionAllergiesExtra}
+        dislikesExtra={sessionDislikesExtra}
+        onDislikesExtraChange={setSessionDislikesExtra}
+        fatLimitG={sessionFatLimitG}
+        onFatLimitGChange={setSessionFatLimitG}
+        carbLimitG={sessionCarbLimitG}
+        onCarbLimitGChange={setSessionCarbLimitG}
+        profileFatLimitG={profile.fatLimitG}
+        profileCarbLimitG={profile.carbLimitG}
+      />
 
-      <div className="space-y-2">
-        <p className="text-sm font-medium">Foto(s) o PDF de la carta (1-4)</p>
-        <p className="text-xs text-foreground/60">Captura la carta completa, no solo lo visible en pantalla.</p>
-
-        <input
-          ref={cameraInputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={(e) => handleCameraCapture(e.target.files)}
-          className="hidden"
-        />
-        <input
-          ref={galleryInputRef}
-          type="file"
-          multiple
-          accept="image/jpeg,image/png,image/webp,application/pdf"
-          onChange={(e) => handleGallerySelect(e.target.files)}
-          className="hidden"
-        />
-
-        <div className="flex gap-2">
-          <button
-            type="button"
-            disabled={isPreparingFiles}
-            onClick={() => cameraInputRef.current?.click()}
-            className="flex-1 rounded-md border border-brand-dark/50 px-3 py-2 text-sm font-medium text-brand-dark transition-colors hover:bg-brand-soft disabled:opacity-50"
-          >
-            Hacer foto
-          </button>
-          <button
-            type="button"
-            disabled={isPreparingFiles}
-            onClick={() => galleryInputRef.current?.click()}
-            className="flex-1 rounded-md border border-foreground/20 px-3 py-2 text-sm font-medium transition-colors hover:bg-foreground/5 disabled:opacity-50"
-          >
-            Elegir archivos
-          </button>
-        </div>
-
-        {isPreparingFiles && (
-          <p className="text-xs text-foreground/60">Preparando imagen(es)…</p>
-        )}
-
-        <FilePreviewStrip files={files} onChange={setFiles} />
-      </div>
+      <AnalyzeFileUpload
+        files={files}
+        onFilesChange={setFiles}
+        onAddFiles={addFiles}
+        isPreparingFiles={isPreparingFiles}
+      />
 
       {errorMsg && (
         <p className="rounded-md bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-400">
