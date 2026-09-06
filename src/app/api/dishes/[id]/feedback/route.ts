@@ -7,8 +7,7 @@ const FeedbackRequestSchema = z.object({ agree: z.boolean() });
 // RLS resuelve ownership vía join a `analyses` (dishes no tiene user_id propio) —
 // un dish ajeno o inexistente simplemente no aparece en el UPDATE, 404.
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const supabase = await createClient();
+  const [{ id }, supabase] = await Promise.all([params, createClient()]);
   const {
     data: { user },
   } = await supabase.auth.getUser();

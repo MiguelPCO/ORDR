@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { rotateImageFile } from "@/lib/image/rotate-image-file";
 
 export function FilePreviewStrip({
@@ -12,19 +12,46 @@ export function FilePreviewStrip({
 }) {
   const [rotateError, setRotateError] = useState<string | null>(null);
 
-  // useMemo (no useEffect+state) para que urls[i] siempre corresponda a files[i] en el mismo
-  // render — con state async había un render donde files ya cambió de orden/longitud pero
-  // urls seguía siendo el del render anterior, colando un <img src=""> pasajero.
-  const urls = useMemo(
-    () => files.map((f) => (f.type === "application/pdf" ? null : URL.createObjectURL(f))),
-    [files]
-  );
+  // Cache por identidad de File (no por índice) para que rotar/reordenar/quitar nunca
+  // muestre el thumbnail de otro archivo. El ref guarda las URLs vivas para poder revocarlas
+  // (creación/revocación viven en el cuerpo del efecto, no en un updater de estado ni en
+  // render); el snapshot en estado es lo único que se lee durante el render.
+  const objectUrlCacheRef = useRef(new Map<File, string>());
+  const [urlSnapshot, setUrlSnapshot] = useState<Map<File, string>>(() => new Map());
 
   useEffect(() => {
+    const cache = objectUrlCacheRef.current;
+    const currentFiles = new Set(files);
+    let changed = false;
+
+    for (const f of files) {
+      if (f.type !== "application/pdf" && !cache.has(f)) {
+        cache.set(f, URL.createObjectURL(f));
+        changed = true;
+      }
+    }
+    for (const [file, url] of cache) {
+      if (!currentFiles.has(file)) {
+        URL.revokeObjectURL(url);
+        cache.delete(file);
+        changed = true;
+      }
+    }
+
+    if (changed) setUrlSnapshot(new Map(cache));
+  }, [files]);
+
+  useEffect(() => {
+    const cache = objectUrlCacheRef.current;
     return () => {
-      urls.forEach((u) => u && URL.revokeObjectURL(u));
+      cache.forEach((url) => URL.revokeObjectURL(url));
+      cache.clear();
     };
-  }, [urls]);
+  }, []);
+
+  const urls = files.map((f) =>
+    f.type === "application/pdf" ? null : (urlSnapshot.get(f) ?? null)
+  );
 
   async function handleRotate(index: number) {
     try {

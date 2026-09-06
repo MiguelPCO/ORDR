@@ -5,8 +5,7 @@ import { DISH_ROW_SELECT, rowToDish } from "@/lib/supabase/dish-row";
 
 // SCHEMA.md §8 — detalle de un análisis pasado (D4). RLS filtra por dueño vía join a `analyses`.
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const supabase = await createClient();
+  const [{ id }, supabase] = await Promise.all([params, createClient()]);
   const {
     data: { user },
   } = await supabase.auth.getUser();

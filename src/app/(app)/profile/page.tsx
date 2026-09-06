@@ -9,8 +9,7 @@ export default async function ProfilePage({
 }: {
   searchParams: Promise<{ saved?: string; error?: string }>;
 }) {
-  const params = await searchParams;
-  const supabase = await createClient();
+  const [params, supabase] = await Promise.all([searchParams, createClient()]);
   const {
     data: { user },
   } = await supabase.auth.getUser();

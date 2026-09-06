@@ -5,8 +5,9 @@ import { useForm } from "react-hook-form";
 import { ProfileSchema, type Profile } from "@/schemas";
 import { targets } from "@/lib/nutrition/targets";
 import { saveProfile } from "@/app/(app)/profile/actions";
+import { NutritionTargetFields } from "@/components/features/profile-form-fields";
 
-type FormValues = {
+export type FormValues = {
   displayName: string;
   sex: "male" | "female";
   birthDate: string;
@@ -284,84 +285,7 @@ export function ProfileForm({
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-1">
-          <label htmlFor="mealsPerDay" className="text-sm font-medium">
-            Comidas/día
-          </label>
-          <input
-            id="mealsPerDay"
-            type="number"
-            className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
-            {...register("mealsPerDay", { valueAsNumber: true })}
-          />
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="proteinGPerKg" className="text-sm font-medium">
-            g prot/kg
-          </label>
-          <input
-            id="proteinGPerKg"
-            type="number"
-            step="0.1"
-            className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
-            {...register("proteinGPerKg", { valueAsNumber: true })}
-          />
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="manualTdee" className="text-sm font-medium">
-            TDEE manual
-          </label>
-          <input
-            id="manualTdee"
-            type="number"
-            placeholder="opcional"
-            className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
-            {...register("manualTdee")}
-          />
-        </div>
-      </div>
-
-      <div className="space-y-1">
-        <label htmlFor="bodyFatPct" className="text-sm font-medium">
-          % grasa corporal
-        </label>
-        <input
-          id="bodyFatPct"
-          type="number"
-          step="0.1"
-          placeholder="opcional, mejora precisión (Katch-McArdle)"
-          className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
-          {...register("bodyFatPct")}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <label htmlFor="fatLimitG" className="text-sm font-medium">
-            Límite grasa (g/comida)
-          </label>
-          <input
-            id="fatLimitG"
-            type="number"
-            placeholder="sin límite"
-            className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
-            {...register("fatLimitG")}
-          />
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="carbLimitG" className="text-sm font-medium">
-            Límite carbos (g/comida)
-          </label>
-          <input
-            id="carbLimitG"
-            type="number"
-            placeholder="sin límite"
-            className="w-full rounded-md border border-foreground/20 bg-transparent px-3 py-2 text-sm"
-            {...register("carbLimitG")}
-          />
-        </div>
-      </div>
+      <NutritionTargetFields register={register} />
 
       {formError && (
         <p className="rounded-md bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-400">

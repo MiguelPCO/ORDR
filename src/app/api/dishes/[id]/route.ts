@@ -5,8 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 // RLS resuelve ownership vía join a `analyses` (dishes no tiene user_id propio) —
 // un dish ajeno o inexistente simplemente no aparece en el SELECT/UPDATE, 404.
 export async function PATCH(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const supabase = await createClient();
+  const [{ id }, supabase] = await Promise.all([params, createClient()]);
   const {
     data: { user },
   } = await supabase.auth.getUser();
